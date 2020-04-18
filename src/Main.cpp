@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include "VertexData.h"
+#include "Mesh.h"
 
 // create a first-person camera
 Camera camera(0.0f, 0.0f, 3.0f);
@@ -24,16 +25,12 @@ void render(GLFWwindow* window);
 
 // utility functions
 unsigned int loadTexture(const std::string& path);
-unsigned int createVAO(std::vector<float> vertices);
 
 // Shaders
 std::map<std::string, Shader> shaderMap;
 
 // Textures
-std::map<std::string, unsigned int> textureMap;
-
-// VAOs
-std::map<std::string, unsigned int> vaoMap;
+std::map<std::string, Texture> textureMap;
 
 int main()
 {
@@ -91,11 +88,8 @@ int main()
 	shaderMap["object cube"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
 
 	// Load textures
-	textureMap["ceramic_diffuse"] = loadTexture("textures/ceramic_diffuse.jpg");
-	textureMap["ceramic_specular"] = loadTexture("textures/ceramic_specular.jpg");
-
-	// create the VAOs
-	vaoMap["cube"] = createVAO(VertexData::cube);
+	textureMap["ceramic_diffuse"] = { loadTexture("textures/ceramic_diffuse.jpg"), "texture_diffuse" };
+	textureMap["ceramic_specular"] = { loadTexture("textures/ceramic_specular.jpg"), "texture_specular" };
 
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -148,26 +142,26 @@ void render(GLFWwindow* window)
 	model = glm::translate(model, glm::vec3(1.0f, 1.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.2f));
 	shaderMap["light cube"].SetMat4f("model", model);
-	glBindVertexArray(vaoMap["cube"]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	Mesh lightCube(Cube::vertices, Cube::indices, {});
+	lightCube.Draw(shaderMap["light cube"]);
 
 	// Render object cubes
 	shaderMap["object cube"].Use();
 	shaderMap["object cube"].SetMat4f("projection", projection);
 	shaderMap["object cube"].SetMat4f("view", view);
 	shaderMap["object cube"].SetVec3f("viewPos", camera.GetPosition());
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureMap["ceramic_diffuse"]);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureMap["ceramic_specular"]);
+	std::vector<Texture> textures =
+	{
+		textureMap["ceramic_diffuse"], textureMap["ceramic_specular"]
+	};
+	Mesh objectCube(Cube::vertices, Cube::indices, textures);
 	for (int i = 0; i < 3; i++)
 	{
 		glm::vec3 pos(0.0f, 0.0f, -i * 5.0f + 0.5f);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, pos);
 		shaderMap["object cube"].SetMat4f("model", model);
-		glBindVertexArray(vaoMap["cube"]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		objectCube.Draw(shaderMap["object cube"]);
 	}
 
 	glfwSwapBuffers(window);
@@ -203,32 +197,4 @@ unsigned int loadTexture(const std::string& path)
 	stbi_image_free(image);
 
 	return id;
-}
-
-unsigned int createVAO(std::vector<float> vertices)
-{
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	// configure vertex attributes
-	// position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// texture coords
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// normals
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	return VAO;
 }
