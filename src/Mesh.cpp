@@ -62,6 +62,20 @@ void Mesh::Draw(Shader shader)
 	glBindVertexArray(0);
 }
 
+std::vector<Vertex> Quad::vertices =
+{
+	{glm::vec3(-0.5f, -0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(0.5f, -0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(0.5f,  0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  1.0f)},
+};
+
+std::vector<unsigned int> Quad::indices =
+{
+	0, 1, 2,
+	2, 3, 0
+};
+
 std::vector<Vertex> Cube::vertices =
 {
 	// front face

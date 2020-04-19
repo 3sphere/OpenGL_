@@ -15,6 +15,7 @@ struct Texture
 {
 	unsigned int id;
 	std::string type;
+	std::string path;
 };
 
 class Mesh
@@ -30,6 +31,12 @@ private:
 	std::vector<unsigned int> mIndices;
 	std::vector<Texture> mTextures;
 	unsigned int mVAO, mVBO, mEBO;
+};
+
+struct Quad
+{
+	static std::vector<Vertex> vertices;
+	static std::vector<unsigned int> indices;
 };
 
 struct Cube

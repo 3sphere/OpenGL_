@@ -8,8 +8,8 @@
 #include "Shader.h"
 #include <map>
 #include <vector>
-#include "VertexData.h"
 #include "Mesh.h"
+#include "Model.h"
 
 // create a first-person camera
 Camera camera(0.0f, 0.0f, 3.0f);
@@ -31,6 +31,9 @@ std::map<std::string, Shader> shaderMap;
 
 // Textures
 std::map<std::string, Texture> textureMap;
+
+// Models
+std::map<std::string, Model> modelMap;
 
 int main()
 {
@@ -90,6 +93,9 @@ int main()
 	// Load textures
 	textureMap["ceramic_diffuse"] = { loadTexture("textures/ceramic_diffuse.jpg"), "texture_diffuse" };
 	textureMap["ceramic_specular"] = { loadTexture("textures/ceramic_specular.jpg"), "texture_specular" };
+
+	// Load models
+	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
 
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -163,6 +169,12 @@ void render(GLFWwindow* window)
 		shaderMap["object cube"].SetMat4f("model", model);
 		objectCube.Draw(shaderMap["object cube"]);
 	}
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 2.0f, -5.0f));
+	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+	shaderMap["object cube"].SetMat4f("model", model);
+	modelMap["nanosuit"].Draw(shaderMap["object cube"]);
 
 	glfwSwapBuffers(window);
 }
