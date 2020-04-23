@@ -54,19 +54,20 @@ void Mesh::Draw(Shader shader)
 		shader.SetInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
 	}
-	glActiveTexture(GL_TEXTURE0);
 
 	// Draw
 	glBindVertexArray(mVAO);
 	glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
 }
 
 std::vector<Vertex> Quad::vertices =
 {
 	{glm::vec3(-0.5f, -0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  0.0f)},
-	{glm::vec3(0.5f, -0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  0.0f)},
-	{glm::vec3(0.5f,  0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3( 0.5f, -0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3( 0.5f,  0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  1.0f)},
 	{glm::vec3(-0.5f,  0.5f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  1.0f)},
 };
 
@@ -95,7 +96,7 @@ std::vector<Vertex> Cube::vertices =
 	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2( 0.0f,  1.0f)},
 	// right face															    
 	{glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2( 0.0f,  0.0f)},
-	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2( 1.0f,  1.0f)},
+	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2( 1.0f,  0.0f)},
 	{glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2( 1.0f,  1.0f)},
 	{glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2( 0.0f,  1.0f)},
 	// top face																    
@@ -108,6 +109,40 @@ std::vector<Vertex> Cube::vertices =
 	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2( 1.0f,  0.0f)},
 	{glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2( 1.0f,  1.0f)},
 	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2( 0.0f,  1.0f)}
+};
+
+std::vector<Vertex> Cube::verticesInvertedNormals = 
+{
+	// front face
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec2(0.0f,  1.0f)},
+	// rear face															    
+	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  1.0f)},
+	// left face															    
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  1.0f)},
+	// right face															    
+	{glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  1.0f)},
+	// top face																    
+	{glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec2(0.0f,  1.0f)},
+	// bottom face															    
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec2(0.0f,  1.0f)}
 };
 
 std::vector<unsigned int> Cube::indices =
@@ -130,4 +165,52 @@ std::vector<unsigned int> Cube::indices =
 	// bottom face
 	20, 21, 22,
 	22, 23, 20
+};
+
+std::vector<Vertex> RoomCube::vertices =
+{
+	// front face
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(0.5f, -0.5f,  0.5f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(0.5f,  0.5f,  0.5f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(0.0f,  1.0f)},
+	// rear face															    
+	{glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(0.5f,  0.5f, -0.5f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f,  1.0f)},
+	// left face															    
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  1.0f)},
+	// right face															    
+	{glm::vec3(0.5f, -0.5f,  0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(0.5f,  0.5f, -0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(0.5f,  0.5f,  0.5f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f,  1.0f)},
+	// bottom face															    
+	{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(0.0f,  0.0f)},
+	{glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(1.0f,  0.0f)},
+	{glm::vec3(0.5f, -0.5f,  0.5f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(1.0f,  1.0f)},
+	{glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(0.0f,  1.0f)}
+};
+
+std::vector<unsigned int> RoomCube::indices =
+{
+	// front face
+	0, 1, 2,
+	2, 3, 0,
+	// rear face
+	4, 5, 6,
+	6, 7, 4,
+	// left face
+	8, 9, 10,
+	10, 11, 8,
+	// right face
+	12, 13, 14,
+	14, 15, 12,
+	// bottom face
+	16, 17, 18,
+	18, 19, 16,
 };

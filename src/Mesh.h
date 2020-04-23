@@ -42,5 +42,12 @@ struct Quad
 struct Cube
 {
 	static std::vector<Vertex> vertices;
+	static std::vector<Vertex> verticesInvertedNormals;
+	static std::vector<unsigned int> indices;
+};
+
+struct RoomCube
+{
+	static std::vector<Vertex> vertices;
 	static std::vector<unsigned int> indices;
 };

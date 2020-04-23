@@ -83,6 +83,14 @@ void Camera::ProcessMouse(GLFWwindow* window)
 void Camera::Update(float deltaTime)
 {
 	mPosition += mForwardSpeed * deltaTime * mFront + mRightSpeed * deltaTime * mRight;
+	if (mPosition.x > 4.5f)
+		mPosition.x = 4.5f;
+	else if (mPosition.x < -4.5f)
+		mPosition.x = -4.5f;
+	if (mPosition.z > 1.8f)
+		mPosition.z = 1.8f;
+	else if (mPosition.z < -7.8f)
+		mPosition.z = -7.8f;
 	UpdateCameraVectors();
 }
 

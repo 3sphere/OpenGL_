@@ -147,12 +147,12 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\BasicMeshes.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\lightCube_fs.txt" />
-    <Text Include="shaders\model_vs.txt" />
-    <Text Include="shaders\objectCube_fs.txt" />
-    <Text Include="shaders\cube_vs.txt" />
+    <Text Include="shaders\light_cube_fs.txt" />
+    <Text Include="shaders\object_fs.txt" />
+    <Text Include="shaders\object_vs.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

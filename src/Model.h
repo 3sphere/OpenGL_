@@ -7,8 +7,6 @@
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
 
-extern unsigned int loadTexture(const std::string& path);
-
 class Model
 {
 public:

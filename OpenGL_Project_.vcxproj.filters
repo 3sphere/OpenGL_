@@ -56,11 +56,13 @@
     <ClInclude Include="src\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\BasicMeshes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\cube_vs.txt" />
-    <Text Include="shaders\objectCube_fs.txt" />
-    <Text Include="shaders\lightCube_fs.txt" />
-    <Text Include="shaders\model_vs.txt" />
+    <Text Include="shaders\light_cube_fs.txt" />
+    <Text Include="shaders\object_vs.txt" />
+    <Text Include="shaders\object_fs.txt" />
   </ItemGroup>
 </Project>
