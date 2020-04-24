@@ -1,11 +1,12 @@
 #include "Camera.h"
 #include <glfw3.h>
+#include <iostream>
 
 Camera::Camera(float x, float y, float z, float yaw, float pitch) :
 	mPosition(glm::vec3(x, y, z)),
 	mYaw(yaw),
 	mPitch(pitch),
-	mMovementSpeed(2.5f),
+	mMovementSpeed(5.0f),
 	mMouseSensitivity(0.05f),
 	mFirstMouse(true),
 	mLastX(0.0f),
@@ -13,19 +14,19 @@ Camera::Camera(float x, float y, float z, float yaw, float pitch) :
 	mForwardSpeed(0.0),
 	mRightSpeed(0.0f)
 {
-
+	UpdateCameraVectors();
 }
 
 Camera::Camera(glm::vec3 pos, float yaw, float pitch) :
 	mPosition(pos),
 	mYaw(yaw),
 	mPitch(pitch),
-	mMovementSpeed(2.5f),
+	mMovementSpeed(5.0f),
 	mMouseSensitivity(0.05f),
 	mFirstMouse(true),
 	mLastX(0.0f),
 	mLastY(0.0f),
-	mForwardSpeed(0.0),
+	mForwardSpeed(0.0f),
 	mRightSpeed(0.0f)
 {
 	UpdateCameraVectors();
@@ -82,7 +83,12 @@ void Camera::ProcessMouse(GLFWwindow* window)
 
 void Camera::Update(float deltaTime)
 {
-	mPosition += mForwardSpeed * deltaTime * mFront + mRightSpeed * deltaTime * mRight;
+	if (mRightSpeed != 0 || mForwardSpeed != 0)
+	{
+		glm::vec3 direction = glm::normalize(mFront * mForwardSpeed + mRight * mRightSpeed);
+		mPosition += direction * mMovementSpeed * deltaTime;
+	}
+	//mPosition += mForwardSpeed * deltaTime * mFront + mRightSpeed * deltaTime * mRight;
 	if (mPosition.x > 4.5f)
 		mPosition.x = 4.5f;
 	else if (mPosition.x < -4.5f)

@@ -25,6 +25,7 @@ private:
 	glm::vec3 mFront;
 	glm::vec3 mUp;
 	glm::vec3 mRight;
+	glm::vec3 mVelocity;
 
 	float mYaw;
 	float mPitch;

@@ -13,7 +13,7 @@
 #include "BasicMeshes.h"
 
 // create a first-person camera
-Camera camera(0.0f, 1.5f, 0.0f);
+Camera camera(0.0f, 1.5f, 2.0f);
 
 // per-frame time logic
 float deltaTime = 0.0f;
