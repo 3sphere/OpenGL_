@@ -88,10 +88,10 @@ int main()
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
 	shaderMap["object"].SetFloat("material.shininess", 64.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
-	shaderMap["object"].SetFloat("pointLight.linear", 0.07f);
-	shaderMap["object"].SetFloat("pointLight.quadratic", 0.017f);
-	shaderMap["object"].SetVec3f("pointLight.ambient", 0.2f, 0.2f, 0.2f);
-	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
+	shaderMap["object"].SetFloat("pointLight.linear", 0.027f);
+	shaderMap["object"].SetFloat("pointLight.quadratic", 0.0028f);
+	shaderMap["object"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
+	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["object"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
 	shaderMap["plant"].Use();
 	shaderMap["plant"].SetInt("material.texture_diffuse1", 0);
@@ -100,8 +100,8 @@ int main()
 	shaderMap["plant"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["plant"].SetFloat("pointLight.linear", 0.07f);
 	shaderMap["plant"].SetFloat("pointLight.quadratic", 0.017f);
-	shaderMap["plant"].SetVec3f("pointLight.ambient", 0.2f, 0.2f, 0.2f);
-	shaderMap["plant"].SetVec3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
+	shaderMap["plant"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
+	shaderMap["plant"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["plant"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
 
 	// Load textures
@@ -116,7 +116,6 @@ int main()
 	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
 	textureMap["grass_diffuse"] = loadTexture("textures/grass.png");
 	
-
 	// Set up VAOs
 	// cube
 	unsigned int cubeVAO, cubeVBO, cubeEBO;

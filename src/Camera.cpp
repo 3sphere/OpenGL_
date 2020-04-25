@@ -87,8 +87,7 @@ void Camera::Update(float deltaTime)
 	{
 		glm::vec3 direction = glm::normalize(mFront * mForwardSpeed + mRight * mRightSpeed);
 		mPosition += direction * mMovementSpeed * deltaTime;
-	}
-	//mPosition += mForwardSpeed * deltaTime * mFront + mRightSpeed * deltaTime * mRight;
+	} 
 	if (mPosition.x > 4.5f)
 		mPosition.x = 4.5f;
 	else if (mPosition.x < -4.5f)
@@ -97,6 +96,11 @@ void Camera::Update(float deltaTime)
 		mPosition.z = 1.8f;
 	else if (mPosition.z < -7.8f)
 		mPosition.z = -7.8f;
+	if (mPosition.y < 0.5f)
+		mPosition.y = 0.5f;
+	else if (mPosition.y > 3.5f)
+		mPosition.y = 3.5f;
+
 	UpdateCameraVectors();
 }
 
