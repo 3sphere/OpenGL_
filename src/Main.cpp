@@ -25,7 +25,7 @@ void update();
 void render(GLFWwindow* window);
 
 // utility functions
-unsigned int loadTexture(const std::string& path, bool alpha);
+unsigned int loadTexture(const std::string& path);
 void bindTextureMaps(unsigned int map0, unsigned int map1);
 
 // Shaders
@@ -82,9 +82,10 @@ int main()
 	// Load shaders and set the uniforms that will not change each frame
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
+	shaderMap["plant"] = Shader("shaders/object_vs.txt", "shaders/plant_fs.txt");
 	shaderMap["object"].Use();
-	shaderMap["object"].SetInt("material.diffuseMap", 0);
-	shaderMap["object"].SetInt("material.specularMap", 1);
+	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
+	shaderMap["object"].SetInt("material.texture_specular1", 1);
 	shaderMap["object"].SetFloat("material.shininess", 64.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["object"].SetFloat("pointLight.linear", 0.07f);
@@ -92,14 +93,29 @@ int main()
 	shaderMap["object"].SetVec3f("pointLight.ambient", 0.2f, 0.2f, 0.2f);
 	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
 	shaderMap["object"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
+	shaderMap["plant"].Use();
+	shaderMap["plant"].SetInt("material.texture_diffuse1", 0);
+	shaderMap["plant"].SetInt("material.texture_specular1", 1);
+	shaderMap["plant"].SetFloat("material.shininess", 64.0f);
+	shaderMap["plant"].SetFloat("pointLight.constant", 1.0f);
+	shaderMap["plant"].SetFloat("pointLight.linear", 0.07f);
+	shaderMap["plant"].SetFloat("pointLight.quadratic", 0.017f);
+	shaderMap["plant"].SetVec3f("pointLight.ambient", 0.2f, 0.2f, 0.2f);
+	shaderMap["plant"].SetVec3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
+	shaderMap["plant"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
 
 	// Load textures
-	textureMap["cube_diffuse"] = loadTexture("textures/container2.png", true);
-	textureMap["cube_specular"] = loadTexture("textures/container2_specular.png", true);
-	textureMap["floor_diffuse"] = loadTexture("textures/wood_floor_diffuse.jpg", false);
-	textureMap["floor_specular"] = loadTexture("textures/wood_floor_specular.jpg", false);
-	textureMap["wall_diffuse"] = loadTexture("textures/wall_diffuse.jpg", false);
-	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg", false);
+	stbi_set_flip_vertically_on_load(true);
+	textureMap["plant_diffuse"] = loadTexture("textures/tree.png");
+	stbi_set_flip_vertically_on_load(false);
+	textureMap["cube_diffuse"] = loadTexture("textures/container2.png");
+	textureMap["cube_specular"] = loadTexture("textures/container2_specular.png");
+	textureMap["floor_diffuse"] = loadTexture("textures/wood_floor_diffuse.jpg");
+	textureMap["floor_specular"] = loadTexture("textures/wood_floor_specular.jpg");
+	textureMap["wall_diffuse"] = loadTexture("textures/wall_diffuse.jpg");
+	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
+	textureMap["grass_diffuse"] = loadTexture("textures/grass.png");
+	
 
 	// Set up VAOs
 	// cube
@@ -260,10 +276,32 @@ void render(GLFWwindow* window)
 	glBindVertexArray(vaoMap["open cube"]);
 	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
 
+	// Render plants
+	shaderMap["plant"].Use();
+	shaderMap["plant"].SetVec2f("textureScale", 1.0f, 1.0f);
+	shaderMap["plant"].SetMat4f("projection", projection);
+	shaderMap["plant"].SetMat4f("view", view);
+	shaderMap["plant"].SetVec3f("viewPos", camera.GetPosition());
+	shaderMap["plant"].SetVec3f("pointLight.position", lightCubePos);
+	// first
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(4.0f, 0.9f, -7.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	shaderMap["plant"].SetMat4f("model", model);
+	bindTextureMaps(textureMap["plant_diffuse"], 0);
+	glBindVertexArray(vaoMap["quad"]);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	// second
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	shaderMap["plant"].SetMat4f("model", model);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 	glfwSwapBuffers(window);
 }
 
-unsigned int loadTexture(const std::string& path, bool alpha)
+unsigned int loadTexture(const std::string& path)
 {
 	unsigned int id;
 	glGenTextures(1, &id);
@@ -273,14 +311,22 @@ unsigned int loadTexture(const std::string& path, bool alpha)
 	if (image)
 	{
 		glBindTexture(GL_TEXTURE_2D, id);
-		if(alpha)
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-		else
+
+		if (numChannels == 3)
+		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+		else if (numChannels == 4)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
