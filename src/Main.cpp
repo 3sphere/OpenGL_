@@ -76,9 +76,6 @@ int main()
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 
-	// Configure stencil testing for outline drawing
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
 	// Load shaders and set the uniforms that will not change each frame
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
@@ -114,7 +111,7 @@ int main()
 	textureMap["floor_specular"] = loadTexture("textures/wood_floor_specular.jpg");
 	textureMap["wall_diffuse"] = loadTexture("textures/wall_diffuse.jpg");
 	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
-	textureMap["grass_diffuse"] = loadTexture("textures/grass.png");
+	textureMap["glass"] = loadTexture("textures/glass.png");
 	
 	// Set up VAOs
 	// cube
@@ -210,7 +207,7 @@ void render(GLFWwindow* window)
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
@@ -276,6 +273,8 @@ void render(GLFWwindow* window)
 	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
 
 	// Render plants
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	shaderMap["plant"].Use();
 	shaderMap["plant"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["plant"].SetMat4f("projection", projection);
@@ -296,7 +295,8 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["plant"].SetMat4f("model", model);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+	glDisable(GL_BLEND);
+	
 	glfwSwapBuffers(window);
 }
 
