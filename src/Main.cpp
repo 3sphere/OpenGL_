@@ -77,6 +77,9 @@ int main()
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 
+	// Enable face culling
+	glEnable(GL_CULL_FACE);
+
 	// Load shaders and set the uniforms that will not change each frame
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
@@ -264,6 +267,7 @@ void render(GLFWwindow* window)
 	glBindVertexArray(vaoMap["quad"]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// 4. walls
+	glFrontFace(GL_CW);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
@@ -272,6 +276,7 @@ void render(GLFWwindow* window)
 	bindTextureMaps(textureMap["wall_diffuse"], textureMap["wall_specular"]);
 	glBindVertexArray(vaoMap["open cube"]);
 	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
+	glFrontFace(GL_CCW);
 
 	// Render plants
 	glEnable(GL_BLEND);
