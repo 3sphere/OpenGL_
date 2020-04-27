@@ -27,6 +27,7 @@ void render(GLFWwindow* window);
 // utility functions
 unsigned int loadTexture(const std::string& path);
 void bindTextureMaps(unsigned int map0, unsigned int map1);
+inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos);
 
 // Shaders
 std::map<std::string, Shader> shaderMap;
@@ -285,6 +286,7 @@ void render(GLFWwindow* window)
 	// first
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.0f, 0.9f, -7.0f));
+	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
 	bindTextureMaps(textureMap["plant_diffuse"], 0);
@@ -293,11 +295,12 @@ void render(GLFWwindow* window)
 	// second
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
+	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(-4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
-	// render glass
+	// Render glass pane
 	shaderMap["transparency"].SetBool("specular", true);
 	shaderMap["transparency"].SetVec3f("material.specular", 0.5f, 0.5f, 0.5f);
 	shaderMap["transparency"].SetFloat("material.shininess", 32.0f);
@@ -358,4 +361,9 @@ void bindTextureMaps(unsigned int map0, unsigned int map1)
 	glBindTexture(GL_TEXTURE_2D, map0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, map1);
+}
+
+inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos)
+{
+	return atan2f(camPos.x - objPos.x, camPos.z - objPos.z);
 }
