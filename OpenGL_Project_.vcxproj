@@ -150,7 +150,7 @@
     <ClInclude Include="src\BasicMeshes.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\plant_fs.txt" />
+    <Text Include="shaders\transparency_fs.txt" />
     <Text Include="shaders\light_cube_fs.txt" />
     <Text Include="shaders\object_fs.txt" />
     <Text Include="shaders\object_vs.txt" />

@@ -79,7 +79,7 @@ int main()
 	// Load shaders and set the uniforms that will not change each frame
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
-	shaderMap["plant"] = Shader("shaders/object_vs.txt", "shaders/plant_fs.txt");
+	shaderMap["transparency"] = Shader("shaders/object_vs.txt", "shaders/transparency_fs.txt");
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
@@ -90,16 +90,16 @@ int main()
 	shaderMap["object"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
 	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["object"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
-	shaderMap["plant"].Use();
-	shaderMap["plant"].SetInt("material.texture_diffuse1", 0);
-	shaderMap["plant"].SetInt("material.texture_specular1", 1);
-	shaderMap["plant"].SetFloat("material.shininess", 64.0f);
-	shaderMap["plant"].SetFloat("pointLight.constant", 1.0f);
-	shaderMap["plant"].SetFloat("pointLight.linear", 0.07f);
-	shaderMap["plant"].SetFloat("pointLight.quadratic", 0.017f);
-	shaderMap["plant"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
-	shaderMap["plant"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
-	shaderMap["plant"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
+	shaderMap["transparency"].Use();
+	shaderMap["transparency"].SetInt("material.texture_diffuse1", 0);
+	shaderMap["transparency"].SetInt("material.texture_specular1", 1);
+	shaderMap["transparency"].SetFloat("material.shininess", 64.0f);
+	shaderMap["transparency"].SetFloat("pointLight.constant", 1.0f);
+	shaderMap["transparency"].SetFloat("pointLight.linear", 0.07f);
+	shaderMap["transparency"].SetFloat("pointLight.quadratic", 0.017f);
+	shaderMap["transparency"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
+	shaderMap["transparency"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
+	shaderMap["transparency"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
 
 	// Load textures
 	stbi_set_flip_vertically_on_load(true);
@@ -275,17 +275,18 @@ void render(GLFWwindow* window)
 	// Render plants
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	shaderMap["plant"].Use();
-	shaderMap["plant"].SetVec2f("textureScale", 1.0f, 1.0f);
-	shaderMap["plant"].SetMat4f("projection", projection);
-	shaderMap["plant"].SetMat4f("view", view);
-	shaderMap["plant"].SetVec3f("viewPos", camera.GetPosition());
-	shaderMap["plant"].SetVec3f("pointLight.position", lightCubePos);
+	shaderMap["transparency"].Use();
+	shaderMap["transparency"].SetBool("specular", false);
+	shaderMap["transparency"].SetVec2f("textureScale", 1.0f, 1.0f);
+	shaderMap["transparency"].SetMat4f("projection", projection);
+	shaderMap["transparency"].SetMat4f("view", view);
+	shaderMap["transparency"].SetVec3f("viewPos", camera.GetPosition());
+	shaderMap["transparency"].SetVec3f("pointLight.position", lightCubePos);
 	// first
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.0f, 0.9f, -7.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
-	shaderMap["plant"].SetMat4f("model", model);
+	shaderMap["transparency"].SetMat4f("model", model);
 	bindTextureMaps(textureMap["plant_diffuse"], 0);
 	glBindVertexArray(vaoMap["quad"]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -293,7 +294,18 @@ void render(GLFWwindow* window)
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
-	shaderMap["plant"].SetMat4f("model", model);
+	shaderMap["transparency"].SetMat4f("model", model);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	
+	// render glass
+	shaderMap["transparency"].SetBool("specular", true);
+	shaderMap["transparency"].SetVec3f("material.specular", 0.5f, 0.5f, 0.5f);
+	shaderMap["transparency"].SetFloat("material.shininess", 32.0f);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.0f, -6.0f));
+	model = glm::scale(model, glm::vec3(10.0f, 2.0f, 1.0f));
+	shaderMap["transparency"].SetMat4f("model", model);
+	bindTextureMaps(textureMap["glass"], 0);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glDisable(GL_BLEND);
 	

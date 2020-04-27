@@ -94,8 +94,8 @@ void Camera::Update(float deltaTime)
 		mPosition.x = -4.5f;
 	if (mPosition.z > 1.8f)
 		mPosition.z = 1.8f;
-	else if (mPosition.z < -7.8f)
-		mPosition.z = -7.8f;
+	else if (mPosition.z < -5.8f)
+		mPosition.z = -5.8f;
 	if (mPosition.y < 0.5f)
 		mPosition.y = 0.5f;
 	else if (mPosition.y > 3.5f)

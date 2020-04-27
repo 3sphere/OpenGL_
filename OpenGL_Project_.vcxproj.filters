@@ -64,6 +64,6 @@
     <Text Include="shaders\light_cube_fs.txt" />
     <Text Include="shaders\object_vs.txt" />
     <Text Include="shaders\object_fs.txt" />
-    <Text Include="shaders\plant_fs.txt" />
+    <Text Include="shaders\transparency_fs.txt" />
   </ItemGroup>
 </Project>
