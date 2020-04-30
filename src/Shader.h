@@ -11,6 +11,7 @@ public:
 	Shader() = default;
 	Shader(const std::string& vertexPath, const std::string& fragmentPath);
 	void Use();
+	unsigned int GetID() const { return mID; }
 
 	// uniform settings functions
 	void SetBool(const std::string& name, bool value) const;

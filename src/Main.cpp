@@ -37,6 +37,7 @@ std::map<std::string, unsigned int> textureMap;
 std::map<std::string, unsigned int> vaoMap;
 std::map<std::string, Model> modelMap;
 std::map<std::string, unsigned int> framebufferMap;
+std::map<std::string, unsigned int> uboMap;
 
 int main()
 {
@@ -196,6 +197,25 @@ int main()
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
 
+	// Set the uniform block of the vertex shaders equal to binding point 0
+	glUniformBlockBinding(shaderMap["object"].GetID(), glGetUniformBlockIndex(shaderMap["object"].GetID(), "Matrices"), 0);
+	glUniformBlockBinding(shaderMap["light cube"].GetID(), glGetUniformBlockIndex(shaderMap["light cube"].GetID(), "Matrices"), 0);
+	glUniformBlockBinding(shaderMap["window"].GetID(), glGetUniformBlockIndex(shaderMap["window"].GetID(), "Matrices"), 0);
+	glUniformBlockBinding(shaderMap["transparency"].GetID(), glGetUniformBlockIndex(shaderMap["transparency"].GetID(), "Matrices"), 0);
+	// Create uniform buffer object and bind it to binding point 0
+	unsigned int uboMatrices;
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	uboMap["matrices"] = uboMatrices;
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMap["matrices"], 0, 2 * sizeof(glm::mat4));
+	// Put the projection matrix into the uniform buffer
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -236,14 +256,16 @@ void render(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	// Put the (updated) view matrix into the correct uniform buffer
 	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	glm::mat4 model(1.0f);
 
 	// Light source
 	shaderMap["light cube"].Use();
-	shaderMap["light cube"].SetMat4f("projection", projection);
-	shaderMap["light cube"].SetMat4f("view", view);
 	glm::vec3 lightCubePos(2.0f * cosf(glfwGetTime()), 2.0f, -2.0f);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, lightCubePos);
@@ -255,8 +277,6 @@ void render(GLFWwindow* window)
 	// Cubes
 	shaderMap["object"].Use();
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
-	shaderMap["object"].SetMat4f("projection", projection);
-	shaderMap["object"].SetMat4f("view", view);
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["object"].SetVec3f("pointLight.position", lightCubePos);
 	bindTextureMaps(textureMap["cube_diffuse"], textureMap["cube_specular"]);
@@ -306,8 +326,6 @@ void render(GLFWwindow* window)
 	shaderMap["transparency"].Use();
 	shaderMap["transparency"].SetBool("specular", false);
 	shaderMap["transparency"].SetVec2f("textureScale", 1.0f, 1.0f);
-	shaderMap["transparency"].SetMat4f("projection", projection);
-	shaderMap["transparency"].SetMat4f("view", view);
 	shaderMap["transparency"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["transparency"].SetVec3f("pointLight.position", lightCubePos);
 	// first
@@ -342,8 +360,6 @@ void render(GLFWwindow* window)
 	// Windows
 	shaderMap["window"].Use();
 	shaderMap["window"].SetBool("specular", false);
-	shaderMap["window"].SetMat4f("projection", projection);
-	shaderMap["window"].SetMat4f("view", view);
 	shaderMap["window"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["window"].SetVec3f("pointLight.position", lightCubePos);
 	shaderMap["window"].SetInt("material.texture_diffuse1", 0);

@@ -1,6 +1,20 @@
 ﻿  Main.cpp
-c:\vs projects\opengl_project_\src\main.cpp(224): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(247): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(269): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(467): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(269): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(289): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(483): warning C4018: '<': signed/unsigned mismatch
+  Mesh.cpp
+c:\vs projects\opengl_project_\src\mesh.cpp(44): warning C4018: '<': signed/unsigned mismatch
+  Model.cpp
+c:\vs projects\opengl_project_\src\model.cpp(12): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(34): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(40): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(53): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(81): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(84): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(108): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(115): warning C4018: '<': signed/unsigned mismatch
+  Shader.cpp
+c:\vs projects\opengl_project_\src\shader.cpp(33): warning C4101: 'e': unreferenced local variable
+  Generating Code...
   OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
