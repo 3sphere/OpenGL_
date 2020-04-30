@@ -28,18 +28,15 @@ void render(GLFWwindow* window);
 unsigned int loadTexture(const std::string& path);
 void bindTextureMaps(unsigned int map0, unsigned int map1);
 inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos);
+unsigned int createFramebuffer(unsigned int width, unsigned int height);
+unsigned int loadCubemap(std::vector<std::string> faces);
 
-// Shaders
+// Maps
 std::map<std::string, Shader> shaderMap;
-
-// Textures
 std::map<std::string, unsigned int> textureMap;
-
-// VAOs
 std::map<std::string, unsigned int> vaoMap;
-
-// Models
 std::map<std::string, Model> modelMap;
+std::map<std::string, unsigned int> framebufferMap;
 
 int main()
 {
@@ -84,6 +81,8 @@ int main()
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
 	shaderMap["transparency"] = Shader("shaders/object_vs.txt", "shaders/transparency_fs.txt");
+	shaderMap["skybox"] = Shader("shaders/skybox_vs.txt", "shaders/skybox_fs.txt");
+	shaderMap["window"] = Shader("shaders/window_vs.txt", "shaders/window_fs.txt");
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
@@ -104,10 +103,23 @@ int main()
 	shaderMap["transparency"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
 	shaderMap["transparency"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["transparency"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
+	shaderMap["window"].Use();
+	shaderMap["window"].SetInt("material.texture_diffuse1", 0);
+	shaderMap["window"].SetInt("material.texture_specular1", 2);
+	shaderMap["window"].SetFloat("material.shininess", 32.0f);
+	shaderMap["window"].SetFloat("pointLight.constant", 1.0f);
+	shaderMap["window"].SetFloat("pointLight.linear", 0.07f);
+	shaderMap["window"].SetFloat("pointLight.quadratic", 0.017f);
+	shaderMap["window"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
+	shaderMap["window"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
+	shaderMap["window"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
+	shaderMap["skybox"].Use();
+	shaderMap["skybox"].SetInt("skybox", 0);
 
 	// Load textures
 	stbi_set_flip_vertically_on_load(true);
 	textureMap["plant_diffuse"] = loadTexture("textures/tree.png");
+	textureMap["window"] = loadTexture("textures/window.png");
 	stbi_set_flip_vertically_on_load(false);
 	textureMap["cube_diffuse"] = loadTexture("textures/container2.png");
 	textureMap["cube_specular"] = loadTexture("textures/container2_specular.png");
@@ -116,6 +128,17 @@ int main()
 	textureMap["wall_diffuse"] = loadTexture("textures/wall_diffuse.jpg");
 	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
 	textureMap["glass"] = loadTexture("textures/glass.png");
+	// skybox
+	std::vector<std::string> faces =
+	{
+		"textures/skybox/right.jpg",
+		"textures/skybox/left.jpg",
+		"textures/skybox/top.jpg",
+		"textures/skybox/bottom.jpg",
+		"textures/skybox/front.jpg",
+		"textures/skybox/back.jpg",
+	};
+	textureMap["skybox"] = loadCubemap(faces);
 	
 	// Set up VAOs
 	// cube
@@ -135,23 +158,23 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 	vaoMap["cube"] = cubeVAO;
-	// open cube with inverted normals
-	unsigned int openCubeVAO, openCubeVBO, openCubeEBO;
-	glGenVertexArrays(1, &openCubeVAO);
-	glGenBuffers(1, &openCubeVBO);
-	glGenBuffers(1, &openCubeEBO);
-	glBindVertexArray(openCubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, openCubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(BasicMeshes::OpenCubeInvertedNormals::vertices), BasicMeshes::OpenCubeInvertedNormals::vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openCubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(BasicMeshes::OpenCubeInvertedNormals::indices), BasicMeshes::OpenCubeInvertedNormals::indices, GL_STATIC_DRAW);
+	// cube with inverted normals
+	unsigned int invertedCubeVAO, invertedCubeVBO, invertedCubeEBO;
+	glGenVertexArrays(1, &invertedCubeVAO);
+	glGenBuffers(1, &invertedCubeVBO);
+	glGenBuffers(1, &invertedCubeEBO);
+	glBindVertexArray(invertedCubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, invertedCubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(BasicMeshes::CubeInvertedNormals::vertices), BasicMeshes::CubeInvertedNormals::vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, invertedCubeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(BasicMeshes::CubeInvertedNormals::indices), BasicMeshes::CubeInvertedNormals::indices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
-	vaoMap["open cube"] = openCubeVAO;
+	vaoMap["inside cube"] = invertedCubeVAO;
 	// quad
 	unsigned int quadVAO, quadVBO, quadEBO;
 	glGenVertexArrays(1, &quadVAO);
@@ -169,7 +192,7 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 	vaoMap["quad"] = quadVAO;
-	
+
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
 
@@ -211,13 +234,13 @@ void render(GLFWwindow* window)
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
 	glm::mat4 model(1.0f);
 
-	// Render light source
+	// Light source
 	shaderMap["light cube"].Use();
 	shaderMap["light cube"].SetMat4f("projection", projection);
 	shaderMap["light cube"].SetMat4f("view", view);
@@ -229,8 +252,7 @@ void render(GLFWwindow* window)
 	glBindVertexArray(vaoMap["cube"]);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-	// Render objects
-	// 1. cubes
+	// Cubes
 	shaderMap["object"].Use();
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["object"].SetMat4f("projection", projection);
@@ -250,13 +272,13 @@ void render(GLFWwindow* window)
 		
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	}
-	// 2. nanosuit model
+	// Nanosuit model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
 	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 	shaderMap["object"].SetMat4f("model", model);
 	modelMap["nanosuit"].Draw(shaderMap["object"]);
-	// 3. floor
+	// Floor
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::scale(model, glm::vec3(10.0f));
@@ -266,7 +288,7 @@ void render(GLFWwindow* window)
 	bindTextureMaps(textureMap["floor_diffuse"], textureMap["floor_specular"]);
 	glBindVertexArray(vaoMap["quad"]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	// 4. walls
+	// Walls and ceiling
 	glFrontFace(GL_CW);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -274,11 +296,11 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetMat4f("model", model);
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
 	bindTextureMaps(textureMap["wall_diffuse"], textureMap["wall_specular"]);
-	glBindVertexArray(vaoMap["open cube"]);
-	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(vaoMap["inside cube"]);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	glFrontFace(GL_CCW);
 
-	// Render plants
+	// Plants
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	shaderMap["transparency"].Use();
@@ -305,7 +327,7 @@ void render(GLFWwindow* window)
 	shaderMap["transparency"].SetMat4f("model", model);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
-	// Render glass pane
+	// Glass pane
 	shaderMap["transparency"].SetBool("specular", true);
 	shaderMap["transparency"].SetVec3f("material.specular", 0.5f, 0.5f, 0.5f);
 	shaderMap["transparency"].SetFloat("material.shininess", 32.0f);
@@ -316,6 +338,34 @@ void render(GLFWwindow* window)
 	bindTextureMaps(textureMap["glass"], 0);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glDisable(GL_BLEND);
+
+	// Windows
+	shaderMap["window"].Use();
+	shaderMap["window"].SetBool("specular", false);
+	shaderMap["window"].SetMat4f("projection", projection);
+	shaderMap["window"].SetMat4f("view", view);
+	shaderMap["window"].SetVec3f("viewPos", camera.GetPosition());
+	shaderMap["window"].SetVec3f("pointLight.position", lightCubePos);
+	shaderMap["window"].SetInt("material.texture_diffuse1", 0);
+	shaderMap["window"].SetInt("skybox", 1);
+	// first
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.95f, 1.5f, -3.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.0f));
+	shaderMap["window"].SetMat4f("model", model);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureMap["window"]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["skybox"]);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	// second
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(4.95f, 1.5f, -3.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.0f));
+	shaderMap["window"].SetMat4f("model", model);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
 	glfwSwapBuffers(window);
 }
@@ -371,4 +421,72 @@ void bindTextureMaps(unsigned int map0, unsigned int map1)
 inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos)
 {
 	return atan2f(camPos.x - objPos.x, camPos.z - objPos.z);
+}
+
+unsigned int createFramebuffer(unsigned int width, unsigned int height)
+{
+	unsigned int framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	// create a texture for the colour attachment
+	unsigned int texColourBuffer;
+	glGenTextures(1, &texColourBuffer);
+	glBindTexture(GL_TEXTURE_2D, texColourBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// create a renderbuffer for the depth and stencil attachments
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// attach the attachments to the framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColourBuffer, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	// check if the framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Error::Framebuffer::Framebuffer is incomplete" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return framebuffer;
+}
+
+unsigned int loadCubemap(std::vector<std::string> faces)
+{
+	unsigned int id;
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+	int width, height, numChannels;
+	for (int i = 0; i < faces.size(); i++)
+	{
+		unsigned char* image = stbi_load(faces[i].c_str(), &width, &height, &numChannels, 0);
+		if (image)
+		{
+			if(numChannels == 3)
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			else if (numChannels == 4)
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+			stbi_image_free(image);
+		}
+		else
+		{
+			std::cout << "Failed to load cubemap texture at path: " << faces[i] << std::endl;
+			stbi_image_free(image);
+		}
+	}
+	
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	
+	return id;
 }

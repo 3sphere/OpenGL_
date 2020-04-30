@@ -150,10 +150,14 @@
     <ClInclude Include="src\BasicMeshes.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="shaders\skybox_fs.txt" />
+    <Text Include="shaders\skybox_vs.txt" />
     <Text Include="shaders\transparency_fs.txt" />
     <Text Include="shaders\light_cube_fs.txt" />
     <Text Include="shaders\object_fs.txt" />
     <Text Include="shaders\object_vs.txt" />
+    <Text Include="shaders\window_fs.txt" />
+    <Text Include="shaders\window_vs.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
