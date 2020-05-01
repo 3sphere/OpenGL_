@@ -9,7 +9,7 @@ class Shader
 {
 public:
 	Shader() = default;
-	Shader(const std::string& vertexPath, const std::string& fragmentPath);
+	Shader(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "");
 	void Use();
 	unsigned int GetID() const { return mID; }
 

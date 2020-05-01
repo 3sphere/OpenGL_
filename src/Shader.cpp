@@ -4,16 +4,19 @@
 #include <glfw3.h>
 #include <iostream>
 
-Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath)
 {
 	// 1. Read vertex shader and fragment shader source code from file
 	std::ifstream vertexFile;
 	std::ifstream fragmentFile;
+	std::ifstream geometryFile;
 	std::string vertexCode;
 	std::string fragmentCode;
+	std::string geometryCode;
 
 	vertexFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fragmentFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	geometryFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	try
 	{
 		// open files and create string streams
@@ -29,6 +32,15 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 		// convert streams to strings
 		vertexCode = vertexStream.str();
 		fragmentCode = fragmentStream.str();
+
+		if (geometryPath != "")
+		{
+			geometryFile.open(geometryPath);
+			std::stringstream geometryStream;
+			geometryStream << geometryFile.rdbuf();
+			geometryFile.close();
+			geometryCode = geometryStream.str();
+		}
 	}
 	catch (std::ifstream::failure& e)
 	{
@@ -51,14 +63,28 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 	glShaderSource(fragment, 1, &fragmentSource, NULL);
 	glCompileShader(fragment);
 	CheckCompilation(fragment, "Fragment");
+	// geometry (if present)
+	unsigned int geometry;
+	if (geometryPath != "")
+	{
+		const char* geometrySource = geometryCode.c_str();
+		geometry = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geometry, 1, &geometrySource, NULL);
+		glCompileShader(geometry);
+		CheckCompilation(geometry, "Geometry");
+	}
 	// complete shader program
 	mID = glCreateProgram();
 	glAttachShader(mID, vertex);
 	glAttachShader(mID, fragment);
+	if (geometryPath != "")
+		glAttachShader(mID, geometry);
 	glLinkProgram(mID);
 	CheckCompilation(mID, "Program");
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+	if (geometryPath != "")
+		glDeleteShader(geometry);
 }
 
 void Shader::Use()

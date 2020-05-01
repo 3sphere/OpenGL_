@@ -11,6 +11,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "BasicMeshes.h"
+#include "Utility.h"
 
 // create a first-person camera
 Camera camera(0.0f, 1.5f, 2.0f);
@@ -23,13 +24,6 @@ float lastFrame = 0.0f;
 void processInput(GLFWwindow* window);
 void update();
 void render(GLFWwindow* window);
-
-// utility functions
-unsigned int loadTexture(const std::string& path);
-void bindTextureMaps(unsigned int map0, unsigned int map1);
-inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos);
-unsigned int createFramebuffer(unsigned int width, unsigned int height);
-unsigned int loadCubemap(std::vector<std::string> faces);
 
 // Maps
 std::map<std::string, Shader> shaderMap;
@@ -82,7 +76,6 @@ int main()
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
 	shaderMap["transparency"] = Shader("shaders/object_vs.txt", "shaders/transparency_fs.txt");
-	shaderMap["skybox"] = Shader("shaders/skybox_vs.txt", "shaders/skybox_fs.txt");
 	shaderMap["window"] = Shader("shaders/window_vs.txt", "shaders/window_fs.txt");
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
@@ -114,8 +107,6 @@ int main()
 	shaderMap["window"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
 	shaderMap["window"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["window"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
-	shaderMap["skybox"].Use();
-	shaderMap["skybox"].SetInt("skybox", 0);
 
 	// Load textures
 	stbi_set_flip_vertically_on_load(true);
@@ -129,17 +120,16 @@ int main()
 	textureMap["wall_diffuse"] = loadTexture("textures/wall_diffuse.jpg");
 	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
 	textureMap["glass"] = loadTexture("textures/glass.png");
-	// skybox
-	std::vector<std::string> faces =
+	std::vector<std::string> textures =
 	{
 		"textures/skybox/right.jpg",
 		"textures/skybox/left.jpg",
 		"textures/skybox/top.jpg",
 		"textures/skybox/bottom.jpg",
 		"textures/skybox/front.jpg",
-		"textures/skybox/back.jpg",
+		"textures/skybox/back.jpg"
 	};
-	textureMap["skybox"] = loadCubemap(faces);
+	textureMap["skybox"] = loadCubemap(textures);
 	
 	// Set up VAOs
 	// cube
@@ -197,11 +187,13 @@ int main()
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
 
+	// Uniform buffer objects
+	// 1. "Matrices" uniform block
 	// Set the uniform block of the vertex shaders equal to binding point 0
-	glUniformBlockBinding(shaderMap["object"].GetID(), glGetUniformBlockIndex(shaderMap["object"].GetID(), "Matrices"), 0);
-	glUniformBlockBinding(shaderMap["light cube"].GetID(), glGetUniformBlockIndex(shaderMap["light cube"].GetID(), "Matrices"), 0);
-	glUniformBlockBinding(shaderMap["window"].GetID(), glGetUniformBlockIndex(shaderMap["window"].GetID(), "Matrices"), 0);
-	glUniformBlockBinding(shaderMap["transparency"].GetID(), glGetUniformBlockIndex(shaderMap["transparency"].GetID(), "Matrices"), 0);
+	bindUniformBlockToPoint(shaderMap["object"], "Matrices", 0);
+	bindUniformBlockToPoint(shaderMap["light cube"], "Matrices", 0);
+	bindUniformBlockToPoint(shaderMap["window"], "Matrices", 0);
+	bindUniformBlockToPoint(shaderMap["transparency"], "Matrices", 0);
 	// Create uniform buffer object and bind it to binding point 0
 	unsigned int uboMatrices;
 	glGenBuffers(1, &uboMatrices);
@@ -256,17 +248,21 @@ void render(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Put the (updated) view matrix into the correct uniform buffer
+	// Put the view matrix into the correct uniform buffer
 	glm::mat4 view = camera.GetViewMatrix();
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glm::mat4 model(1.0f);
+	glm::vec3 lightCubePos(2.0f * cosf(glfwGetTime()), 2.0f, -2.0f);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["lighting"]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, 4 * sizeof(float), glm::value_ptr(camera.GetPosition()));
+	glBufferSubData(GL_UNIFORM_BUFFER, 4 * sizeof(float), 4 * sizeof(float), glm::value_ptr(lightCubePos));
 
 	// Light source
 	shaderMap["light cube"].Use();
-	glm::vec3 lightCubePos(2.0f * cosf(glfwGetTime()), 2.0f, -2.0f);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, lightCubePos);
 	model = glm::scale(model, glm::vec3(0.1f));
@@ -384,125 +380,4 @@ void render(GLFWwindow* window)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
 	glfwSwapBuffers(window);
-}
-
-unsigned int loadTexture(const std::string& path)
-{
-	unsigned int id;
-	glGenTextures(1, &id);
-
-	int width, height, numChannels;
-	unsigned char* image = stbi_load(path.c_str(), &width, &height, &numChannels, 0);
-	if (image)
-	{
-		glBindTexture(GL_TEXTURE_2D, id);
-
-		if (numChannels == 3)
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-		else if (numChannels == 4)
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(image);
-	}
-	else
-	{
-		std::cout << "Failed to load texture at path: " << path << std::endl;
-		stbi_image_free(image);
-	}
-
-	return id;
-}
-
-void bindTextureMaps(unsigned int map0, unsigned int map1)
-{
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, map0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, map1);
-}
-
-inline float billboard(const glm::vec3& camPos, const glm::vec3& objPos)
-{
-	return atan2f(camPos.x - objPos.x, camPos.z - objPos.z);
-}
-
-unsigned int createFramebuffer(unsigned int width, unsigned int height)
-{
-	unsigned int framebuffer;
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-	// create a texture for the colour attachment
-	unsigned int texColourBuffer;
-	glGenTextures(1, &texColourBuffer);
-	glBindTexture(GL_TEXTURE_2D, texColourBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// create a renderbuffer for the depth and stencil attachments
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	// attach the attachments to the framebuffer
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColourBuffer, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-	// check if the framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Error::Framebuffer::Framebuffer is incomplete" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	return framebuffer;
-}
-
-unsigned int loadCubemap(std::vector<std::string> faces)
-{
-	unsigned int id;
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-
-	int width, height, numChannels;
-	for (int i = 0; i < faces.size(); i++)
-	{
-		unsigned char* image = stbi_load(faces[i].c_str(), &width, &height, &numChannels, 0);
-		if (image)
-		{
-			if(numChannels == 3)
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-			else if (numChannels == 4)
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-			stbi_image_free(image);
-		}
-		else
-		{
-			std::cout << "Failed to load cubemap texture at path: " << faces[i] << std::endl;
-			stbi_image_free(image);
-		}
-	}
-	
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	
-	return id;
 }
