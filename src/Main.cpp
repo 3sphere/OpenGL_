@@ -82,8 +82,8 @@ int main()
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
 	shaderMap["object"].SetFloat("material.shininess", 64.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
-	shaderMap["object"].SetFloat("pointLight.linear", 0.027f);
-	shaderMap["object"].SetFloat("pointLight.quadratic", 0.0028f);
+	shaderMap["object"].SetFloat("pointLight.linear", 0.07f);
+	shaderMap["object"].SetFloat("pointLight.quadratic", 0.017f);
 	shaderMap["object"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
 	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.8f, 0.66f, 0.41f);
 	shaderMap["object"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
