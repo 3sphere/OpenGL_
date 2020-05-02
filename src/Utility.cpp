@@ -43,6 +43,46 @@ unsigned int loadTexture(const std::string& path)
 	return id;
 }
 
+unsigned int loadTextureSRGB(const std::string& path)
+{
+	unsigned int id;
+	glGenTextures(1, &id);
+
+	int width, height, numChannels;
+	unsigned char* image = stbi_load(path.c_str(), &width, &height, &numChannels, 0);
+	if (image)
+	{
+		glBindTexture(GL_TEXTURE_2D, id);
+
+		if (numChannels == 3)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+		else if (numChannels == 4)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(image);
+	}
+	else
+	{
+		std::cout << "Failed to load texture at path: " << path << std::endl;
+		stbi_image_free(image);
+	}
+
+	return id;
+}
+
 void bindTextureMaps(unsigned int map0, unsigned int map1)
 {
 	glActiveTexture(GL_TEXTURE0);

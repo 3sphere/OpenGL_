@@ -97,8 +97,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 	
-	
-
 	return Mesh(vertices, indices, textures);
 }
 
@@ -124,7 +122,10 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* material, aiTexture
 		if (!skip)
 		{
 			Texture texture;
-			texture.id = TextureFromFile(str.C_Str(), mDirectory);
+			if(typeName == "texture_diffuse")
+				texture.id = TextureFromFileSRGB(str.C_Str(), mDirectory);
+			else
+				texture.id = TextureFromFile(str.C_Str(), mDirectory);
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);
@@ -152,6 +153,42 @@ unsigned int TextureFromFile(const char* path, const std::string& directory)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 		else if (numChannels == 4)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(image);
+	}
+	else
+	{
+		std::cout << "Failed to load texture at path: " << path << std::endl;
+		stbi_image_free(image);
+	}
+
+	return textureID;
+}
+
+unsigned int TextureFromFileSRGB(const char* path, const std::string& directory)
+{
+	std::string filename(path);
+	filename = directory + '/' + filename;
+	std::cout << filename << std::endl;
+
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, numChannels;
+	unsigned char* image = stbi_load(filename.c_str(), &width, &height, &numChannels, 0);
+	if (image)
+	{
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		if (numChannels == 3)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		else if (numChannels == 4)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

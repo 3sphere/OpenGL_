@@ -1,5 +1,10 @@
-﻿  Main.cpp
-c:\vs projects\opengl_project_\src\main.cpp(240): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(262): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(289): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+﻿  Model.cpp
+c:\vs projects\opengl_project_\src\model.cpp(12): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(34): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(40): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(53): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(81): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(84): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(106): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\model.cpp(113): warning C4018: '<': signed/unsigned mismatch
   OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe

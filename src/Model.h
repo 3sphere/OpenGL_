@@ -26,3 +26,4 @@ private:
 };
 
 unsigned int TextureFromFile(const char* path, const std::string& directory);
+unsigned int TextureFromFileSRGB(const char* path, const std::string& directory);
