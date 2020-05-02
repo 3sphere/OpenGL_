@@ -40,6 +40,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	// Create window
 	GLFWwindow* window = glfwCreateWindow(1024, 720, "OpenGL", NULL, NULL);
@@ -71,6 +72,9 @@ int main()
 
 	// Enable face culling
 	glEnable(GL_CULL_FACE);
+
+	// MSAA
+	glEnable(GL_MULTISAMPLE);
 
 	// Load shaders and set the uniforms that will not change each frame
 	shaderMap["object"] = Shader("shaders/object_vs.txt", "shaders/object_fs.txt");
