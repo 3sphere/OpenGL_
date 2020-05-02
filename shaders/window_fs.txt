@@ -74,7 +74,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, b
 
 	if(specularEnabled)
 	{
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+		vec3 halfwayDir = normalize(viewDir + lightDir);
+		float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
 		specular = light.specular * spec * material.specular;
 	}
 

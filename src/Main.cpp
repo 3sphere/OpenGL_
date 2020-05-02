@@ -84,7 +84,7 @@ int main()
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
-	shaderMap["object"].SetFloat("material.shininess", 64.0f);
+	shaderMap["object"].SetFloat("material.shininess", 32.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["object"].SetFloat("pointLight.linear", 0.027f);
 	shaderMap["object"].SetFloat("pointLight.quadratic", 0.0028f);
@@ -94,7 +94,7 @@ int main()
 	shaderMap["transparency"].Use();
 	shaderMap["transparency"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["transparency"].SetInt("material.texture_specular1", 1);
-	shaderMap["transparency"].SetFloat("material.shininess", 64.0f);
+	shaderMap["transparency"].SetFloat("material.shininess", 32.0f);
 	shaderMap["transparency"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["transparency"].SetFloat("pointLight.linear", 0.027f);
 	shaderMap["transparency"].SetFloat("pointLight.quadratic", 0.0028f);
@@ -207,7 +207,7 @@ int main()
 	uboMap["matrices"] = uboMatrices;
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMap["matrices"], 0, 2 * sizeof(glm::mat4));
 	// Put the projection matrix into the uniform buffer
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(60.0f), 1024.0f / 720.0f, 0.1f, 100.0f);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
