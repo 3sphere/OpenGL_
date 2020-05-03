@@ -320,7 +320,7 @@ void render(GLFWwindow* window)
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.0f, 0.9f, -7.0f));
 	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.3f, 2.0f, 1.0f));
 	shaderMap["depth"].SetMat4f("model", model);
 	glBindVertexArray(vaoMap["quad"]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -328,7 +328,7 @@ void render(GLFWwindow* window)
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
 	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(-4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.3f, 2.0f, 1.0f));
 	shaderMap["depth"].SetMat4f("model", model);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
