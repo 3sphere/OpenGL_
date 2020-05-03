@@ -152,6 +152,9 @@
     <ClInclude Include="src\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="shaders\depth_map_fs.txt" />
+    <Text Include="shaders\depth_map_gs.txt" />
+    <Text Include="shaders\depth_map_vs.txt" />
     <Text Include="shaders\skybox_fs.txt" />
     <Text Include="shaders\skybox_vs.txt" />
     <Text Include="shaders\transparency_fs.txt" />

@@ -81,9 +81,11 @@ int main()
 	shaderMap["light cube"] = Shader("shaders/object_vs.txt", "shaders/light_cube_fs.txt");
 	shaderMap["transparency"] = Shader("shaders/object_vs.txt", "shaders/transparency_fs.txt");
 	shaderMap["window"] = Shader("shaders/window_vs.txt", "shaders/window_fs.txt");
+	shaderMap["depth"] = Shader("shaders/depth_map_vs.txt", "shaders/depth_map_fs.txt", "shaders/depth_map_gs.txt");
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
+	shaderMap["object"].SetInt("depthMap", 2);
 	shaderMap["object"].SetFloat("material.shininess", 32.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["object"].SetFloat("pointLight.linear", 0.22f);
@@ -212,6 +214,28 @@ int main()
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+	// Depth cubemap setup
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	unsigned int depthCubemap;
+	glGenTextures(1, &depthCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	for (int i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	framebufferMap["depth"] = depthMapFBO;
+	textureMap["depth"] = depthCubemap;
+
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -248,23 +272,75 @@ void update()
 
 void render(GLFWwindow* window)
 {
+	glm::vec3 lightCubePos(2.0f * cosf(glfwGetTime()), 2.0f, -2.0f);
+	glm::mat4 model(1.0f);
+
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Put the view matrix into the correct uniform buffer
+	// First render pass: render to depth map from light's perspective
+	float nearPlane = 1.0f, farPlane = 25.0f, aspect = 1.0f;
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
+	std::vector<glm::mat4> shadowTransforms;
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightCubePos, lightCubePos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	glViewport(0, 0, 1024, 1024);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferMap["depth"]);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	shaderMap["depth"].Use();
+	for (int i = 0; i < 6; ++i)
+		shaderMap["depth"].SetMat4f("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+	shaderMap["depth"].SetFloat("farPlane", farPlane);
+	shaderMap["depth"].SetVec3f("lightPos", lightCubePos);
+	// Cubes
+	glBindVertexArray(vaoMap["cube"]);
+	for (int i = -1; i < 2; i++)
+	{
+		glm::vec3 pos(i * 2.5f, 1.0f, -7.0f);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, pos);
+		float angle = 50.0f * glfwGetTime();
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		shaderMap["depth"].SetMat4f("model", model);
+
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	}
+	// Nanosuit model
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
+	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+	shaderMap["depth"].SetMat4f("model", model);
+	modelMap["nanosuit"].Draw(shaderMap["depth"]);
+	// Plants
+	// first
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(4.0f, 0.9f, -7.0f));
+	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	shaderMap["depth"].SetMat4f("model", model);
+	glBindVertexArray(vaoMap["quad"]);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	// second
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
+	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(-4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
+	shaderMap["depth"].SetMat4f("model", model);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+	// Second render pass: render the scene as normal
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1024, 720);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 view = camera.GetViewMatrix();
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	glm::mat4 model(1.0f);
-	glm::vec3 lightCubePos(2.0f * cosf(glfwGetTime()), 2.0f, -2.0f);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["lighting"]);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, 4 * sizeof(float), glm::value_ptr(camera.GetPosition()));
-	glBufferSubData(GL_UNIFORM_BUFFER, 4 * sizeof(float), 4 * sizeof(float), glm::value_ptr(lightCubePos));
-
 	// Light source
 	shaderMap["light cube"].Use();
 	model = glm::mat4(1.0f);
@@ -276,11 +352,14 @@ void render(GLFWwindow* window)
 
 	// Cubes
 	shaderMap["object"].Use();
+	shaderMap["object"].SetFloat("farPlane", farPlane);
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["object"].SetVec3f("pointLight.position", lightCubePos);
 	bindTextureMaps(textureMap["cube_diffuse"], textureMap["cube_specular"]);
 	glBindVertexArray(vaoMap["cube"]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["depth"]);
 	for (int i = -1; i < 2; i++)
 	{
 		glm::vec3 pos(i * 2.5f, 1.0f, -7.0f);
