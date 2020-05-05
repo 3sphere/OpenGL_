@@ -10,6 +10,7 @@ struct Material
 	// if using texture maps
 	sampler2D texture_diffuse1;
 	sampler2D texture_specular1;
+	sampler2D texture_normal1;
 
 	// if not using texture maps
 	vec3 ambient;

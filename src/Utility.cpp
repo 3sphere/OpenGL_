@@ -91,6 +91,16 @@ void bindTextureMaps(unsigned int map0, unsigned int map1)
 	glBindTexture(GL_TEXTURE_2D, map1);
 }
 
+void bindTextureMaps(unsigned int map0, unsigned int map1, unsigned int map2)
+{
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, map0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, map1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, map2);
+}
+
 unsigned int createFramebuffer(unsigned int width, unsigned int height)
 {
 	unsigned int framebuffer;

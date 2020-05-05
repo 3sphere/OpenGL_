@@ -82,6 +82,7 @@ int main()
 	shaderMap["transparency"] = Shader("shaders/object_vs.txt", "shaders/transparency_fs.txt");
 	shaderMap["window"] = Shader("shaders/window_vs.txt", "shaders/window_fs.txt");
 	shaderMap["depth"] = Shader("shaders/depth_map_vs.txt", "shaders/depth_map_fs.txt", "shaders/depth_map_gs.txt");
+
 	shaderMap["object"].Use();
 	shaderMap["object"].SetInt("material.texture_diffuse1", 0);
 	shaderMap["object"].SetInt("material.texture_specular1", 1);
@@ -123,6 +124,7 @@ int main()
 	textureMap["cube_specular"] = loadTexture("textures/container2_specular.png");
 	textureMap["floor_diffuse"] = loadTextureSRGB("textures/wood_floor_diffuse.jpg");
 	textureMap["floor_specular"] = loadTexture("textures/wood_floor_specular.jpg");
+	textureMap["floor_normal"] = loadTexture("textures/wood_floor_normal.jpg");
 	textureMap["wall_diffuse"] = loadTextureSRGB("textures/wall_diffuse.jpg");
 	textureMap["wall_specular"] = loadTexture("textures/wall_specular.jpg");
 	textureMap["glass"] = loadTexture("textures/glass.png");
@@ -222,7 +224,6 @@ int main()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	for (int i = 0; i < 6; ++i)
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -394,7 +395,7 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
 	shaderMap["object"].SetMat4f("model", model);
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
-	bindTextureMaps(textureMap["wall_diffuse"], textureMap["wall_specular"]);
+	bindTextureMaps(textureMap["floor_diffuse"], textureMap["floor_specular"]);
 	glBindVertexArray(vaoMap["inside cube"]);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	glFrontFace(GL_CCW);
