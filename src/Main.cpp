@@ -29,10 +29,11 @@ void render(GLFWwindow* window);
 // Maps
 std::map<std::string, Shader> shaderMap;
 std::map<std::string, unsigned int> textureMap;
-std::map<std::string, unsigned int> vaoMap;
 std::map<std::string, Model> modelMap;
 std::map<std::string, unsigned int> framebufferMap;
 std::map<std::string, unsigned int> uboMap;
+
+std::map<std::string, BasicMesh> meshMap;
 
 int main()
 {
@@ -142,59 +143,9 @@ int main()
 	};
 	textureMap["skybox"] = loadCubemap(textures);
 
-	
-	// Set up VAOs
-	// cube
-	unsigned int cubeVAO, cubeVBO, cubeEBO;
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glGenBuffers(1, &cubeEBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(BasicMeshes::Cube::vertices), BasicMeshes::Cube::vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(BasicMeshes::Cube::indices), BasicMeshes::Cube::indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	vaoMap["cube"] = cubeVAO;
-	// cube with inverted normals
-	unsigned int invertedCubeVAO, invertedCubeVBO, invertedCubeEBO;
-	glGenVertexArrays(1, &invertedCubeVAO);
-	glGenBuffers(1, &invertedCubeVBO);
-	glGenBuffers(1, &invertedCubeEBO);
-	glBindVertexArray(invertedCubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, invertedCubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(BasicMeshes::CubeInvertedNormals::vertices), BasicMeshes::CubeInvertedNormals::vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, invertedCubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(BasicMeshes::CubeInvertedNormals::indices), BasicMeshes::CubeInvertedNormals::indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	vaoMap["inside cube"] = invertedCubeVAO;
-	// quad
-	unsigned int quadVAO, quadVBO, quadEBO;
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glGenBuffers(1, &quadEBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(BasicMeshes::Quad::vertices), BasicMeshes::Quad::vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(BasicMeshes::Quad::indices), BasicMeshes::Quad::indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	vaoMap["quad"] = quadVAO;
+	meshMap["quad"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices);
+	meshMap["cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices);
+	meshMap["inverted cube"] = BasicMesh(BasicMeshes::CubeInvertedNormals::Vertices, BasicMeshes::CubeInvertedNormals::Indices);
 
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
@@ -302,7 +253,6 @@ void render(GLFWwindow* window)
 	shaderMap["depth"].SetFloat("farPlane", farPlane);
 	shaderMap["depth"].SetVec3f("lightPos", lightCubePos);
 	// Cubes
-	glBindVertexArray(vaoMap["cube"]);
 	for (int i = -1; i < 2; i++)
 	{
 		glm::vec3 pos(i * 2.5f, 1.0f, -7.0f);
@@ -312,7 +262,7 @@ void render(GLFWwindow* window)
 		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 		shaderMap["depth"].SetMat4f("model", model);
 
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		meshMap["cube"].Draw(shaderMap["depth"]);
 	}
 	// Nanosuit model
 	model = glm::mat4(1.0f);
@@ -327,15 +277,14 @@ void render(GLFWwindow* window)
 	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.3f, 2.0f, 1.0f));
 	shaderMap["depth"].SetMat4f("model", model);
-	glBindVertexArray(vaoMap["quad"]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["depth"]);
 	// second
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
 	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(-4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.3f, 2.0f, 1.0f));
 	shaderMap["depth"].SetMat4f("model", model);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["depth"]);
 
 
 	// Second render pass: render the scene as normal
@@ -352,10 +301,7 @@ void render(GLFWwindow* window)
 	model = glm::translate(model, lightCubePos);
 	model = glm::scale(model, glm::vec3(0.1f));
 	shaderMap["light cube"].SetMat4f("model", model);
-	BasicMesh Cube(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices);
-	Cube.Draw(shaderMap["light cube"]);
-	//glBindVertexArray(vaoMap["cube"]);
-	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	meshMap["cube"].Draw(shaderMap["light cube"]);
 
 	// Cubes
 	shaderMap["object"].Use();
@@ -365,7 +311,6 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["object"].SetVec3f("pointLight.position", lightCubePos);
 	bindTextureMaps(textureMap["cube_diffuse"], textureMap["cube_specular"]);
-	glBindVertexArray(vaoMap["cube"]);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["depth"]);
 	for (int i = -1; i < 2; i++)
@@ -377,7 +322,7 @@ void render(GLFWwindow* window)
 		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 		shaderMap["object"].SetMat4f("model", model);
 		
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		meshMap["cube"].Draw(shaderMap["object"]);
 	}
 	// Nanosuit model
 	model = glm::mat4(1.0f);
@@ -394,8 +339,7 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetMat4f("model", model);
 	shaderMap["object"].SetVec2f("textureScale", 10.0f, 10.0f);
 	bindTextureMaps(textureMap["floor_diffuse"], textureMap["floor_specular"], textureMap["floor_normal"]);
-	glBindVertexArray(vaoMap["quad"]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["object"]);
 	// Walls and ceiling
 	glFrontFace(GL_CW);
 	model = glm::mat4(1.0f);
@@ -404,8 +348,7 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetMat4f("model", model);
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
 	bindTextureMaps(textureMap["wall_diffuse"], textureMap["wall_specular"], textureMap["wall_normal"]);
-	glBindVertexArray(vaoMap["inside cube"]);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	meshMap["inverted cube"].Draw(shaderMap["object"]);
 	glFrontFace(GL_CCW);
 
 	// Plants
@@ -423,15 +366,14 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
 	bindTextureMaps(textureMap["plant_diffuse"], 0);
-	glBindVertexArray(vaoMap["quad"]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["transparency"]);
 	// second
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-4.0f, 0.9f, -7.0f));
 	model = glm::rotate(model, billboard(camera.GetPosition(), glm::vec3(-4.0f, 0.9f, -7.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["transparency"]);
 	
 	// Glass pane
 	shaderMap["transparency"].SetBool("specular", true);
@@ -442,7 +384,7 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(10.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
 	bindTextureMaps(textureMap["glass"], 0);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["transparency"]);
 	glDisable(GL_BLEND);
 
 	// Windows
@@ -462,14 +404,14 @@ void render(GLFWwindow* window)
 	glBindTexture(GL_TEXTURE_2D, textureMap["window"]);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["skybox"]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["window"]);
 	// second
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.95f, 1.5f, -3.0f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.0f));
 	shaderMap["window"].SetMat4f("model", model);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	meshMap["quad"].Draw(shaderMap["window"]);
 	
 	glfwSwapBuffers(window);
 }
