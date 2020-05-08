@@ -31,6 +31,12 @@ void Mesh::SetupMesh()
 	// Texture coords
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 	glEnableVertexAttribArray(2);
+	// Tangents
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+	glEnableVertexAttribArray(3);
+	// Bitangents
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+	glEnableVertexAttribArray(4);
 
 	glBindVertexArray(0);
 }
@@ -40,7 +46,7 @@ void Mesh::Draw(Shader shader)
 	/* CONVENTION: */
 	// assume that each sampler2D in the shader is called either texture_diffuseN or
 	// texture_specularN, where N ranges from 1 to the maximum number of texture units allowed
-	int diffuseNum = 1, specularNum = 1;
+	int diffuseNum = 1, specularNum = 1, normalNum = 1;
 	for (int i = 0; i < mTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -50,6 +56,8 @@ void Mesh::Draw(Shader shader)
 			number = std::to_string(diffuseNum++);
 		else if (name == "texture_specular")
 			number = std::to_string(specularNum++);
+		else if (name == "texture_normal")
+			number = std::to_string(normalNum++);
 
 		shader.SetInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, mTextures[i].id);

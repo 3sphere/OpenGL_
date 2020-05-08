@@ -64,6 +64,7 @@ uniform Material material;
 uniform PointLight pointLight;
 uniform samplerCube depthMap;
 uniform float farPlane;
+uniform bool normalMapping;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -81,7 +82,15 @@ vec3 gridSamplingDisk[20] = vec3[]
 
 void main()
 {
-	vec3 norm = normalize(Normal);
+	vec3 norm;
+	if (normalMapping)
+	{
+		norm = texture(material.texture_normal1, TexCoords).rgb;
+		norm = normalize(norm * 2.0 - 1.0);
+	}
+	else
+		norm = normalize(Normal);
+
 	vec3 viewDir = normalize(viewPos - FragPos);
 
 	// point light

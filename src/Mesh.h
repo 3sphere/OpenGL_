@@ -9,6 +9,8 @@ struct Vertex
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
+	glm::vec3 Tangent;
+	glm::vec3 Bitangent;
 };
 
 struct Texture
@@ -31,23 +33,4 @@ private:
 	std::vector<unsigned int> mIndices;
 	std::vector<Texture> mTextures;
 	unsigned int mVAO, mVBO, mEBO;
-};
-
-struct Quad
-{
-	static std::vector<Vertex> vertices;
-	static std::vector<unsigned int> indices;
-};
-
-struct Cube
-{
-	static std::vector<Vertex> vertices;
-	static std::vector<Vertex> verticesInvertedNormals;
-	static std::vector<unsigned int> indices;
-};
-
-struct RoomCube
-{
-	static std::vector<Vertex> vertices;
-	static std::vector<unsigned int> indices;
 };

@@ -1,6 +1,5 @@
-﻿  Main.cpp
-c:\vs projects\opengl_project_\src\main.cpp(265): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(276): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(307): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(369): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+﻿  BasicMesh.cpp
+c:\vs projects\opengl_project_\src\basicmesh.cpp(7): warning C4018: '<': signed/unsigned mismatch
+c:\vs projects\opengl_project_\src\basicmesh.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\basicmesh.cpp(52): warning C4018: '<': signed/unsigned mismatch
   OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
