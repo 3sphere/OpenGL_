@@ -124,7 +124,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-	vec3 lightDir = normalize(light.position - fragPos);
+	vec3 lightDir = normalize(pointLight.position - fragPos);
 	vec3 reflectDir = reflect(-lightDir, normal);
 
 	// ambient

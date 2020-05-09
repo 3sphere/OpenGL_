@@ -107,7 +107,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* material, aiTexture
 	{
 		aiString str;
 		material->GetTexture(type, i, &str);
-		std::cout << str.C_Str() << std::endl;
+		//std::cout << str.C_Str() << std::endl;
 		// check if this texture has already been loaded
 		bool skip = false;
 		for (int j = 0; j < mLoadedTextures.size(); j++)
@@ -139,11 +139,12 @@ unsigned int TextureFromFile(const char* path, const std::string& directory)
 {
 	std::string filename(path);
 	filename = directory + '/' + filename;
-	std::cout << filename << std::endl;
+	//std::cout << filename << std::endl;
 
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 
+	stbi_set_flip_vertically_on_load(false);
 	int width, height, numChannels;
 	unsigned char* image = stbi_load(filename.c_str(), &width, &height, &numChannels, 0);
 	if (image)
