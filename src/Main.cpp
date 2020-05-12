@@ -135,7 +135,7 @@ int main()
 	{
 		{loadTextureSRGB("textures/wood_floor_diffuse.jpg"), "texture_diffuse"},
 		{loadTexture("textures/wood_floor_specular.jpg"), "texture_specular"},
-		{loadTexture("textures/wood_floor_normal.jpg"), "texture_diffuse"}
+		{loadTexture("textures/wood_floor_normal.jpg"), "texture_normal"}
 	};
 
 	std::vector<Texture> boxTextures =
@@ -354,6 +354,7 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetMat4f("model", model);
 	modelMap["nanosuit"].Draw(shaderMap["object"]);
 	// Floor
+	shaderMap["object"].SetBool("normalMapping", true);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::scale(model, glm::vec3(10.0f));
@@ -367,7 +368,6 @@ void render(GLFWwindow* window)
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
 	shaderMap["object"].SetMat4f("model", model);
-	shaderMap["object"].SetBool("normalMapping", true);
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
 	meshMap["inverted cube"].Draw(shaderMap["object"]);
 	glFrontFace(GL_CCW);
