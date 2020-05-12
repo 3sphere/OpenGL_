@@ -163,6 +163,7 @@ int main()
 	};
 
 	// Create basic meshes
+	meshMap["cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices);
 	meshMap["plant"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, plantTextures);
 	meshMap["glass pane"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, glassPaneTextures);
 	meshMap["window"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, windowTextures);
@@ -332,7 +333,7 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetFloat("farPlane", farPlane);
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
-	shaderMap["object"].SetVec3f("pointLight.position", lightCubePos);
+	shaderMap["object"].SetVec3f("lightPos", lightCubePos);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["depth"]);
 	for (int i = -1; i < 2; i++)
@@ -366,9 +367,11 @@ void render(GLFWwindow* window)
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
 	shaderMap["object"].SetMat4f("model", model);
+	shaderMap["object"].SetBool("normalMapping", true);
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
 	meshMap["inverted cube"].Draw(shaderMap["object"]);
 	glFrontFace(GL_CCW);
+	shaderMap["object"].SetBool("normalMapping", false);
 
 	// Plants
 	glEnable(GL_BLEND);
