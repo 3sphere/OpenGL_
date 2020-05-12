@@ -1,6 +1,1 @@
-﻿  Main.cpp
-c:\vs projects\opengl_project_\src\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(255): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(285): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(344): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
+﻿  OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
