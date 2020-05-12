@@ -1,1 +1,7 @@
-﻿  OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
+﻿  Main.cpp
+c:\vs projects\opengl_project_\src\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(255): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(285): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(345): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  LINK : C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe not found or not built by the last incremental link; performing full link
+  OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
