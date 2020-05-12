@@ -344,7 +344,7 @@ void render(GLFWwindow* window)
 		model = glm::translate(model, pos);
 		float angle = 50.0f * glfwGetTime();
 		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-		shaderMap["object"].SetMat4f("model", model);
+		shaderMap["object"].SetMat4f("model", model); 
 		
 		meshMap["box"].Draw(shaderMap["object"]);
 	}
