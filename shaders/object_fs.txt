@@ -202,7 +202,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 float ShadowCalc(vec3 fragPos)
 {
-	vec3 lightToFrag = fragPos - pointLight.position;
+	vec3 lightToFrag = fragPos - LightPos;
 	float currentDepth = length(lightToFrag);
 
 	float bias = 0.05;
