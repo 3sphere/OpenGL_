@@ -1,7 +1,0 @@
-﻿  LINK : C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe not found or not built by the last incremental link; performing full link
-Utility.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
-Shader.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
-Camera.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
-Callback.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
-glad.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
-  OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
