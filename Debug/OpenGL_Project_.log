@@ -1,38 +1,7 @@
-<<<<<<< HEAD
 ﻿  LINK : C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe not found or not built by the last incremental link; performing full link
-Utility.obj : warning LNK4205: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing current debugging information for referencing module; linking object as if no debug info
-=======
-﻿  glad.c
-  BasicMesh.cpp
-c:\vs projects\opengl_project_\src\basicmesh.cpp(7): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\basicmesh.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\basicmesh.cpp(52): warning C4018: '<': signed/unsigned mismatch
-  Callback.cpp
-  Camera.cpp
-c:\vs projects\opengl_project_\src\camera.cpp(62): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\camera.cpp(63): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\camera.cpp(72): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\camera.cpp(73): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Main.cpp
-c:\vs projects\opengl_project_\src\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(255): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(285): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\vs projects\opengl_project_\src\main.cpp(345): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  Mesh.cpp
-c:\vs projects\opengl_project_\src\mesh.cpp(50): warning C4018: '<': signed/unsigned mismatch
-  Model.cpp
-c:\vs projects\opengl_project_\src\model.cpp(12): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(34): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(40): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(53): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(81): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(84): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(106): warning C4018: '<': signed/unsigned mismatch
-c:\vs projects\opengl_project_\src\model.cpp(113): warning C4018: '<': signed/unsigned mismatch
-  Shader.cpp
-c:\vs projects\opengl_project_\src\shader.cpp(45): warning C4101: 'e': unreferenced local variable
-  Utility.cpp
-c:\vs projects\opengl_project_\src\utility.cpp(145): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
->>>>>>> normal_mapping
+Utility.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
+Shader.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
+Camera.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
+Callback.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
+glad.obj : warning LNK4204: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing debugging information for referencing module; linking object as if no debug info
   OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe
