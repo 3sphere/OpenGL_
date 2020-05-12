@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 ﻿  BasicMesh.cpp
 c:\vs projects\opengl_project_\src\basicmesh.cpp(7): warning C4018: '<': signed/unsigned mismatch
 c:\vs projects\opengl_project_\src\basicmesh.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\vs projects\opengl_project_\src\basicmesh.cpp(52): warning C4018: '<': signed/unsigned mismatch
   LINK : C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe not found or not built by the last incremental link; performing full link
 Utility.obj : warning LNK4205: 'C:\VS Projects\OpenGL_Project_\Debug\vc141.pdb' is missing current debugging information for referencing module; linking object as if no debug info
+=======
+﻿  Main.cpp
+c:\vs projects\opengl_project_\src\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(255): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(285): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\vs projects\opengl_project_\src\main.cpp(345): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  LINK : C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe not found or not built by the last incremental link; performing full link
+>>>>>>> normal_mapping
   OpenGL_Project_.vcxproj -> C:\VS Projects\OpenGL_Project_\Debug\OpenGL_Project_.exe

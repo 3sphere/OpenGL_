@@ -319,6 +319,7 @@ void render(GLFWwindow* window)
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMap["matrices"]);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	// Light source
 	shaderMap["light cube"].Use();
 	model = glm::mat4(1.0f);
