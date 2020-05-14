@@ -123,7 +123,6 @@ int main()
 	};
 	textureMap["skybox"] = loadCubemap(skyboxTextures);
 
-	stbi_set_flip_vertically_on_load(true);
 	std::vector<Texture> wallTextures =
 	{
 		{loadTextureSRGB("textures/wall_diffuse.jpg"), "texture_diffuse"},
@@ -162,6 +161,14 @@ int main()
 		{0, "texture_specular"}
 	};
 
+	std::vector<Texture> brickTextures = 
+	{
+		{loadTextureSRGB("textures/bricks.jpg"), "texture_diffuse"},
+		{0, "texture_specular"},
+		{loadTexture("textures/bricks_normal.jpg"), "texture_normal"},
+		{loadTexture("textures/bricks_displacement.jpg"), "texture_displacement"}
+	};
+
 	// Create basic meshes
 	meshMap["cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices);
 	meshMap["plant"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, plantTextures);
@@ -170,6 +177,7 @@ int main()
 	meshMap["floor"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, floorTextures);
 	meshMap["box"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, boxTextures);
 	meshMap["inverted cube"] = BasicMesh(BasicMeshes::CubeInvertedNormals::Vertices, BasicMeshes::CubeInvertedNormals::Indices, wallTextures);
+	meshMap["brick cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, brickTextures);
 
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
@@ -276,7 +284,7 @@ void render(GLFWwindow* window)
 		shaderMap["depth"].SetMat4f("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 	shaderMap["depth"].SetFloat("farPlane", farPlane);
 	shaderMap["depth"].SetVec3f("lightPos", lightCubePos);
-	// Cubes
+	// Rotating boxes
 	for (int i = -1; i < 2; i++)
 	{
 		glm::vec3 pos(i * 2.5f, 1.0f, -7.0f);
@@ -288,6 +296,11 @@ void render(GLFWwindow* window)
 
 		meshMap["box"].Draw(shaderMap["depth"]);
 	}
+	// Brick cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	shaderMap["depth"].SetMat4f("model", model);
+	meshMap["brick cube"].Draw(shaderMap["depth"]);
 	// Nanosuit model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
@@ -348,7 +361,13 @@ void render(GLFWwindow* window)
 		
 		meshMap["box"].Draw(shaderMap["object"]);
 	}
+	// Brick cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	shaderMap["object"].SetMat4f("model", model);
+	meshMap["brick cube"].Draw(shaderMap["object"]);
 	// Nanosuit model
+	shaderMap["object"].SetBool("normalMapping", false);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
 	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
@@ -372,7 +391,6 @@ void render(GLFWwindow* window)
 	shaderMap["object"].SetVec2f("textureScale", 5.0f, 5.0f);
 	meshMap["inverted cube"].Draw(shaderMap["object"]);
 	glFrontFace(GL_CCW);
-	shaderMap["object"].SetBool("normalMapping", false);
 
 	// Plants
 	glEnable(GL_BLEND);
@@ -396,6 +414,7 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(1.0f, 2.0f, 1.0f));
 	shaderMap["transparency"].SetMat4f("model", model);
 	meshMap["plant"].Draw(shaderMap["transparency"]);
+
 	
 	// Glass pane
 	shaderMap["transparency"].SetBool("specular", true);

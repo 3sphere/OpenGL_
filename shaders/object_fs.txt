@@ -17,6 +17,7 @@ struct Material
 	sampler2D texture_diffuse1;
 	sampler2D texture_specular1;
 	sampler2D texture_normal1;
+	sampler2D texture_displacement1;
 
 	// if not using texture maps
 	vec3 ambient;
@@ -75,6 +76,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 lightPos, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float ShadowCalc(vec3 fragPos);
+//vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir);
 
 vec3 gridSamplingDisk[20] = vec3[]
 (
@@ -90,10 +92,10 @@ void main()
 	vec3 norm = normalize(Normal);
 	if (normalMapping)
 	{
-		vec3 norm = texture(material.texture_normal1, TexCoords).rgb;
-		norm = normalize(norm * 2.0 - 1.0);
-
 		vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+
+		norm = texture(material.texture_normal1, TexCoords).rgb;
+		norm = normalize(norm * 2.0 - 1.0);
 
 		// point light
 		vec3 result = CalcPointLight(pointLight, TangentLightPos, norm, TangentFragPos, viewDir);

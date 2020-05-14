@@ -25,5 +25,4 @@ private:
 	std::vector<Texture> mLoadedTextures;
 };
 
-unsigned int TextureFromFile(const char* path, const std::string& directory);
-unsigned int TextureFromFileSRGB(const char* path, const std::string& directory);
+unsigned int TextureFromFile(const char* path, const std::string& directory, bool gammaCorrection);

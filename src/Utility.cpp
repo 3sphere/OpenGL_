@@ -8,6 +8,7 @@ unsigned int loadTexture(const std::string& path)
 	unsigned int id;
 	glGenTextures(1, &id);
 
+	stbi_set_flip_vertically_on_load(true);
 	int width, height, numChannels;
 	unsigned char* image = stbi_load(path.c_str(), &width, &height, &numChannels, 0);
 	if (image)
@@ -48,6 +49,7 @@ unsigned int loadTextureSRGB(const std::string& path)
 	unsigned int id;
 	glGenTextures(1, &id);
 
+	stbi_set_flip_vertically_on_load(true);
 	int width, height, numChannels;
 	unsigned char* image = stbi_load(path.c_str(), &width, &height, &numChannels, 0);
 	if (image)

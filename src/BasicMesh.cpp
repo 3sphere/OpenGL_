@@ -46,9 +46,9 @@ BasicMesh::BasicMesh(std::vector<Vertex> vertices, std::vector<unsigned int> ind
 void BasicMesh::Draw(Shader shader)
 {
 	/* CONVENTION: */
-	// assume that each sampler2D in the shader is called either texture_diffuseN or
-	// texture_specularN, where N ranges from 1 to the maximum number of texture units allowed
-	int diffuseNum = 1, specularNum = 1, normalNum = 1;
+	// assume that each sampler2D in the shader is called texture_<type>N,
+	// where N ranges from 1 to the maximum number of texture units allowed
+	int diffuseNum = 1, specularNum = 1, normalNum = 1, displacementNum = 1;
 	for (int i = 0; i < mTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -60,6 +60,8 @@ void BasicMesh::Draw(Shader shader)
 			number = std::to_string(specularNum++);
 		else if (name == "texture_normal")
 			number = std::to_string(normalNum++);
+		else if (name == "texture_displacement")
+			number = std::to_string(displacementNum++);
 
 		shader.SetInt(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
