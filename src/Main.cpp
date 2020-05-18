@@ -141,12 +141,6 @@ int main()
 		{loadTexture("textures/wood_floor_normal.jpg"), "texture_normal"}
 	};
 
-	std::vector<Texture> boxTextures =
-	{
-		{loadTextureSRGB("textures/container2.png"), "texture_diffuse"},
-		{loadTexture("textures/container2_specular.png"), "texture_specular"},
-	};
-
 	std::vector<Texture> glassPaneTextures =
 	{
 		{loadTextureSRGB("textures/glass.png"), "texture_diffuse"},
@@ -173,15 +167,31 @@ int main()
 		{loadTexture("textures/toy_box_displacement.png"), "texture_displacement"}
 	};
 
+	std::vector<Texture> crateTextures = 
+	{
+		{loadTextureSRGB("textures/wood2_diffuse.jpg"), "texture_diffuse"},
+		{loadTexture("textures/wood2_specular.jpg"), "texture_specular"},
+		{loadTexture("textures/wood2_normal.jpg"), "texture_normal"},
+		{loadTexture("textures/wood2_displacement_inverted.png"), "texture_displacement"}
+	};
+
+	std::vector<Texture> metalTextures =
+	{
+		{loadTextureSRGB("textures/metal_diffuse.jpg"), "texture_diffuse"},
+		{loadTexture("textures/metal_specular.jpg"), "texture_specular"},
+		{loadTexture("textures/metal_normal.jpg"), "texture_normal"},
+		{loadTexture("textures/metal_displacement_inverted.png"), "texture_displacement"}
+	};
+
 	// Create basic meshes
 	meshMap["cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices);
 	meshMap["plant"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, plantTextures);
 	meshMap["glass pane"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, glassPaneTextures);
 	meshMap["window"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, windowTextures);
 	meshMap["floor"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, floorTextures);
-	meshMap["box"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, boxTextures);
+	meshMap["box"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, crateTextures);
 	meshMap["inverted cube"] = BasicMesh(BasicMeshes::CubeInvertedNormals::Vertices, BasicMeshes::CubeInvertedNormals::Indices, wallTextures);
-	meshMap["brick cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, brickTextures);
+	meshMap["parallax cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, metalTextures);
 
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
@@ -312,11 +322,11 @@ void render(GLFWwindow* window)
 
 		meshMap["box"].Draw(shaderMap["depth"]);
 	}
-	// Brick cube
+	// parallax cube
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	model = glm::translate(model, glm::vec3(2.0f, 0.5f, -2.0f));
 	shaderMap["depth"].SetMat4f("model", model);
-	meshMap["brick cube"].Draw(shaderMap["depth"]);
+	meshMap["parallax cube"].Draw(shaderMap["depth"]);
 	// Nanosuit model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
@@ -360,9 +370,8 @@ void render(GLFWwindow* window)
 	// Rotating boxes
 	shaderMap["object"].Use();
 	shaderMap["object"].SetFloat("heightScale", heightScale);
-	//std::cout << heightScale << std::endl;
-	shaderMap["object"].SetBool("parallaxMapping", false);
-	shaderMap["object"].SetBool("normalMapping", false);
+	shaderMap["object"].SetBool("parallaxMapping", true);
+	shaderMap["object"].SetBool("normalMapping", true);
 	shaderMap["object"].SetFloat("farPlane", farPlane);
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
@@ -380,13 +389,13 @@ void render(GLFWwindow* window)
 		
 		meshMap["box"].Draw(shaderMap["object"]);
 	}
-	// Brick cube
+	// parallax cube
 	shaderMap["object"].SetBool("normalMapping", true);
 	shaderMap["object"].SetBool("parallaxMapping", true);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	model = glm::translate(model, glm::vec3(2.0f, 0.5f, -2.0f));
 	shaderMap["object"].SetMat4f("model", model);
-	meshMap["brick cube"].Draw(shaderMap["object"]);
+	meshMap["parallax cube"].Draw(shaderMap["object"]);
 	// Nanosuit model
 	shaderMap["object"].SetBool("normalMapping", false);
 	shaderMap["object"].SetBool("parallaxMapping", false);
