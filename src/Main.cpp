@@ -35,6 +35,9 @@ std::map<std::string, unsigned int> uboMap;
 
 std::map<std::string, BasicMesh> meshMap;
 
+// uniforms
+float heightScale = 0.1f;
+
 int main()
 {
 	// Initialise GLFW
@@ -86,7 +89,7 @@ int main()
 	shaderMap["depth"] = Shader("shaders/depth_map_vs.txt", "shaders/depth_map_fs.txt", "shaders/depth_map_gs.txt");
 
 	shaderMap["object"].Use();
-	shaderMap["object"].SetInt("depthMap", 3);
+	shaderMap["object"].SetInt("depthMap", 4);
 	shaderMap["object"].SetFloat("material.shininess", 32.0f);
 	shaderMap["object"].SetFloat("pointLight.constant", 1.0f);
 	shaderMap["object"].SetFloat("pointLight.linear", 0.22f);
@@ -94,6 +97,7 @@ int main()
 	shaderMap["object"].SetVec3f("pointLight.ambient", 0.05f, 0.05f, 0.05f);
 	shaderMap["object"].SetVec3f("pointLight.diffuse", 0.96f, 0.75f, 0.26f);
 	shaderMap["object"].SetVec3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
+	shaderMap["object"].SetFloat("heightScale", 0.1f);
 	shaderMap["transparency"].Use();
 	shaderMap["transparency"].SetFloat("material.shininess", 32.0f);
 	shaderMap["transparency"].SetFloat("pointLight.constant", 1.0f);
@@ -137,12 +141,6 @@ int main()
 		{loadTexture("textures/wood_floor_normal.jpg"), "texture_normal"}
 	};
 
-	std::vector<Texture> boxTextures =
-	{
-		{loadTextureSRGB("textures/container2.png"), "texture_diffuse"},
-		{loadTexture("textures/container2_specular.png"), "texture_specular"},
-	};
-
 	std::vector<Texture> glassPaneTextures =
 	{
 		{loadTextureSRGB("textures/glass.png"), "texture_diffuse"},
@@ -165,8 +163,24 @@ int main()
 	{
 		{loadTextureSRGB("textures/bricks.jpg"), "texture_diffuse"},
 		{0, "texture_specular"},
-		{loadTexture("textures/bricks_normal.jpg"), "texture_normal"},
-		{loadTexture("textures/bricks_displacement.jpg"), "texture_displacement"}
+		{loadTexture("textures/toy_box_normal.png"), "texture_normal"},
+		{loadTexture("textures/toy_box_displacement.png"), "texture_displacement"}
+	};
+
+	std::vector<Texture> crateTextures = 
+	{
+		{loadTextureSRGB("textures/wood2_diffuse.jpg"), "texture_diffuse"},
+		{loadTexture("textures/wood2_specular.jpg"), "texture_specular"},
+		{loadTexture("textures/wood2_normal.jpg"), "texture_normal"},
+		{loadTexture("textures/wood2_displacement_inverted.png"), "texture_displacement"}
+	};
+
+	std::vector<Texture> metalTextures =
+	{
+		{loadTextureSRGB("textures/metal_diffuse.jpg"), "texture_diffuse"},
+		{loadTexture("textures/metal_specular.jpg"), "texture_specular"},
+		{loadTexture("textures/metal_normal.jpg"), "texture_normal"},
+		{loadTexture("textures/metal_displacement_inverted.png"), "texture_displacement"}
 	};
 
 	// Create basic meshes
@@ -175,9 +189,9 @@ int main()
 	meshMap["glass pane"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, glassPaneTextures);
 	meshMap["window"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, windowTextures);
 	meshMap["floor"] = BasicMesh(BasicMeshes::Quad::Vertices, BasicMeshes::Quad::Indices, floorTextures);
-	meshMap["box"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, boxTextures);
+	meshMap["box"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, crateTextures);
 	meshMap["inverted cube"] = BasicMesh(BasicMeshes::CubeInvertedNormals::Vertices, BasicMeshes::CubeInvertedNormals::Indices, wallTextures);
-	meshMap["brick cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, brickTextures);
+	meshMap["parallax cube"] = BasicMesh(BasicMeshes::Cube::Vertices, BasicMeshes::Cube::Indices, metalTextures);
 
 	// Load models
 	modelMap["nanosuit"] = Model("models/nanosuit/nanosuit.obj");
@@ -243,6 +257,18 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		heightScale -= 0.0005f;
+		if (heightScale < 0.0f)
+			heightScale = 0.0f;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		heightScale += 0.0005f;
+		if (heightScale > 1.0f)
+			heightScale = 1.0f;
+	}
 
 	camera.ProcessInput(window);
 }
@@ -296,11 +322,11 @@ void render(GLFWwindow* window)
 
 		meshMap["box"].Draw(shaderMap["depth"]);
 	}
-	// Brick cube
+	// parallax cube
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	model = glm::translate(model, glm::vec3(2.0f, 0.5f, -2.0f));
 	shaderMap["depth"].SetMat4f("model", model);
-	meshMap["brick cube"].Draw(shaderMap["depth"]);
+	meshMap["parallax cube"].Draw(shaderMap["depth"]);
 	// Nanosuit model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
@@ -343,12 +369,14 @@ void render(GLFWwindow* window)
 
 	// Rotating boxes
 	shaderMap["object"].Use();
-	shaderMap["object"].SetBool("normalMapping", false);
+	shaderMap["object"].SetFloat("heightScale", heightScale);
+	shaderMap["object"].SetBool("parallaxMapping", true);
+	shaderMap["object"].SetBool("normalMapping", true);
 	shaderMap["object"].SetFloat("farPlane", farPlane);
 	shaderMap["object"].SetVec2f("textureScale", 1.0f, 1.0f);
 	shaderMap["object"].SetVec3f("viewPos", camera.GetPosition());
 	shaderMap["object"].SetVec3f("lightPos", lightCubePos);
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["depth"]);
 	for (int i = -1; i < 2; i++)
 	{
@@ -361,13 +389,16 @@ void render(GLFWwindow* window)
 		
 		meshMap["box"].Draw(shaderMap["object"]);
 	}
-	// Brick cube
+	// parallax cube
+	shaderMap["object"].SetBool("normalMapping", true);
+	shaderMap["object"].SetBool("parallaxMapping", true);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -4.0f));
+	model = glm::translate(model, glm::vec3(2.0f, 0.5f, -2.0f));
 	shaderMap["object"].SetMat4f("model", model);
-	meshMap["brick cube"].Draw(shaderMap["object"]);
+	meshMap["parallax cube"].Draw(shaderMap["object"]);
 	// Nanosuit model
 	shaderMap["object"].SetBool("normalMapping", false);
+	shaderMap["object"].SetBool("parallaxMapping", false);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.5f));
 	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
