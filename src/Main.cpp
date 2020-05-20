@@ -257,18 +257,6 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-	{
-		heightScale -= 0.0005f;
-		if (heightScale < 0.0f)
-			heightScale = 0.0f;
-	}
-	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-	{
-		heightScale += 0.0005f;
-		if (heightScale > 1.0f)
-			heightScale = 1.0f;
-	}
 
 	camera.ProcessInput(window);
 }
