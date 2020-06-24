@@ -134,7 +134,7 @@ int main()
 		{loadTexture("textures/wall_normal.jpg"), "texture_normal"}
 	};
 
-	std::vector<Texture> floorTextures = 
+	std::vector<Texture> floorTextures =
 	{
 		{loadTextureSRGB("textures/wood_floor_diffuse.jpg"), "texture_diffuse"},
 		{loadTexture("textures/wood_floor_specular.jpg"), "texture_specular"},
@@ -148,7 +148,7 @@ int main()
 	};
 
 	std::vector<Texture> plantTextures =
-	{ 
+	{
 		{loadTextureSRGB("textures/tree.png"), "texture_diffuse"},
 		{0, "texture_specular"}
 	};
@@ -159,7 +159,7 @@ int main()
 		{0, "texture_specular"}
 	};
 
-	std::vector<Texture> brickTextures = 
+	std::vector<Texture> brickTextures =
 	{
 		{loadTextureSRGB("textures/bricks.jpg"), "texture_diffuse"},
 		{0, "texture_specular"},
@@ -167,7 +167,7 @@ int main()
 		{loadTexture("textures/toy_box_displacement.png"), "texture_displacement"}
 	};
 
-	std::vector<Texture> crateTextures = 
+	std::vector<Texture> crateTextures =
 	{
 		{loadTextureSRGB("textures/wood2_diffuse.jpg"), "texture_diffuse"},
 		{loadTexture("textures/wood2_specular.jpg"), "texture_specular"},
@@ -373,8 +373,8 @@ void render(GLFWwindow* window)
 		model = glm::translate(model, pos);
 		float angle = 50.0f * glfwGetTime();
 		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-		shaderMap["object"].SetMat4f("model", model); 
-		
+		shaderMap["object"].SetMat4f("model", model);
+
 		meshMap["box"].Draw(shaderMap["object"]);
 	}
 	// parallax cube
@@ -434,7 +434,7 @@ void render(GLFWwindow* window)
 	shaderMap["transparency"].SetMat4f("model", model);
 	meshMap["plant"].Draw(shaderMap["transparency"]);
 
-	
+
 	// Glass pane
 	shaderMap["transparency"].SetBool("specular", true);
 	shaderMap["transparency"].SetVec3f("material.specular", 0.5f, 0.5f, 0.5f);
@@ -457,7 +457,7 @@ void render(GLFWwindow* window)
 	model = glm::translate(model, glm::vec3(-4.95f, 1.5f, -3.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.0f));
-	shaderMap["window"].SetMat4f("model", model); 
+	shaderMap["window"].SetMat4f("model", model);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureMap["skybox"]);
 	meshMap["window"].Draw(shaderMap["window"]);
@@ -468,6 +468,6 @@ void render(GLFWwindow* window)
 	model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.0f));
 	shaderMap["window"].SetMat4f("model", model);
 	meshMap["window"].Draw(shaderMap["window"]);
-	
+
 	glfwSwapBuffers(window);
 }

@@ -74,8 +74,6 @@ void main()
 	vec3 result = CalcPointLight(pointLight, norm, FragPos, viewDir, specular);
 	float alpha = texture(material.texture_diffuse1, TexCoords).a;
 
-	float gamma = 2.2;
-	result = pow(result, vec3(1.0/gamma));
 	FragColour = vec4(result, alpha);
 }
 

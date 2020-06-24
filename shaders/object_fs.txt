@@ -108,8 +108,7 @@ void main()
 		// point light
 		vec3 result = CalcPointLight(pointLight, TangentLightPos, norm, TangentFragPos, viewDir, texCoords);
 		float alpha = texture(material.texture_diffuse1, texCoords).a;
-		float gamma = 2.2;
-		result = pow(result, vec3(1.0/gamma));
+		
 		FragColour = vec4(result, alpha);
 	}
 	else
@@ -122,8 +121,6 @@ void main()
 		vec3 result = CalcPointLight(pointLight, LightPos, norm, FragPos, viewDir, TexCoords);
 		float alpha = texture(material.texture_diffuse1, TexCoords).a;
 
-		float gamma = 2.2;
-		result = pow(result, vec3(1.0/gamma));
 		FragColour = vec4(result, alpha);
 	}
 }

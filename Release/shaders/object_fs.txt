@@ -1,0 +1,263 @@
+#version 330 core
+
+in vec2 TexCoords;
+in vec3 Normal;
+in vec3 FragPos;
+in vec3 TangentLightPos;
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
+in vec3 ViewPos;
+in vec3 LightPos;
+
+out vec4 FragColour;
+
+struct Material
+{
+	// if using texture maps
+	sampler2D texture_diffuse1;
+	sampler2D texture_specular1;
+	sampler2D texture_normal1;
+	sampler2D texture_displacement1;
+
+	// if not using texture maps
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float shininess;
+};
+
+struct DirLight
+{
+	vec3 direction;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct PointLight
+{
+	vec3 position;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct SpotLight
+{
+	vec3 position;
+	vec3 direction;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	float innerCutoff;
+	float outerCutoff;
+};
+
+uniform Material material;
+uniform PointLight pointLight;
+uniform samplerCube depthMap;
+uniform float farPlane;
+uniform bool normalMapping;
+uniform bool parallaxMapping;
+uniform float heightScale;
+
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcPointLight(PointLight light, vec3 lightPos, vec3 normal, vec3 fragPos, vec3 viewDir, vec2 texCoords);
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float ShadowCalc(vec3 fragPos);
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir);
+
+vec3 gridSamplingDisk[20] = vec3[]
+(
+	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+void main()
+{
+	if (normalMapping)
+	{
+		vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+		vec2 texCoords = TexCoords;
+		if (parallaxMapping)
+		{
+			texCoords = ParallaxMapping(TexCoords, viewDir);
+			if (texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+				discard;
+		}
+
+		vec3 norm = texture(material.texture_normal1, texCoords).rgb;
+		norm = normalize(norm * 2.0 - 1.0);
+
+		// point light
+		vec3 result = CalcPointLight(pointLight, TangentLightPos, norm, TangentFragPos, viewDir, texCoords);
+		float alpha = texture(material.texture_diffuse1, texCoords).a;
+		
+		FragColour = vec4(result, alpha);
+	}
+	else
+	{
+		vec3 viewDir = normalize(ViewPos - FragPos);
+
+		vec3 norm = normalize(Normal);
+
+		// point light
+		vec3 result = CalcPointLight(pointLight, LightPos, norm, FragPos, viewDir, TexCoords);
+		float alpha = texture(material.texture_diffuse1, TexCoords).a;
+
+		FragColour = vec4(result, alpha);
+	}
+}
+
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+{
+	vec3 lightDir = normalize(-light.direction);
+	vec3 reflectDir = reflect(-lightDir, normal);
+
+	// ambient
+	vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
+
+	// diffuse 
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
+
+	// specular
+	vec3 halfwayDir = normalize(viewDir + lightDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
+	vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
+
+	return (ambient + diffuse + specular);
+}
+
+vec3 CalcPointLight(PointLight light, vec3 lightPos, vec3 normal, vec3 fragPos, vec3 viewDir, vec2 texCoords)
+{
+	vec3 lightDir = normalize(lightPos - fragPos);
+	vec3 reflectDir = reflect(-lightDir, normal);
+
+	// ambient
+	vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1, texCoords));
+
+	// diffuse
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.texture_diffuse1, texCoords));
+
+	// specular
+	vec3 halfwayDir = normalize(viewDir + lightDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
+	vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, texCoords));
+
+	// shadow calculation
+	float shadow = ShadowCalc(FragPos);
+
+	// attenuation
+	float distance = length(lightPos - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+
+	return (ambient + (1.0 - shadow) * (diffuse + specular));
+}
+
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+	vec3 lightDir = normalize(light.position - fragPos);
+	vec3 reflectDir = reflect(-lightDir, normal);
+
+	// ambient
+	vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
+
+	// diffuse
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
+
+	// specular
+	vec3 halfwayDir = normalize(viewDir + lightDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
+	vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
+
+	// spotlight
+	float theta = dot(lightDir, normalize(-light.direction));
+	float epsilon = (light.innerCutoff - light.outerCutoff);
+	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+	diffuse *= intensity;
+	specular *= intensity;
+
+	// attenuation
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+
+	return (ambient + diffuse + specular);
+}
+
+float ShadowCalc(vec3 fragPos)
+{
+	vec3 lightToFrag = fragPos - LightPos;
+	float currentDepth = length(lightToFrag);
+
+	float bias = 0.05;
+	float shadow = 0.0;
+	int samples = 20;
+	float viewDistance = length(ViewPos - fragPos);
+	float diskRadius = 0.02;
+	for (int i = 0; i < samples; ++i)
+	{
+		float closestDepth = texture(depthMap, lightToFrag + gridSamplingDisk[i] * diskRadius).r;
+		closestDepth *= farPlane;
+		if(currentDepth - bias > closestDepth)
+			shadow += 1.0;
+	}
+	shadow /= samples;
+
+	return shadow;
+}
+
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{
+	const float minLayers = 8.0;
+	const float maxLayers = 32.0;
+	float numLayers = mix(maxLayers, minLayers, max(dot(viewDir, vec3(0.0, 0.0, 1.0)), 0.0));
+	float layerDepth = 1.0 / numLayers;
+	float currentLayerDepth = 0.0;
+	vec2 P = viewDir.xy * heightScale;
+	vec2 deltaTexCoords = P / numLayers;
+
+	vec2 currentTexCoords = texCoords;
+	float currentDepthMapValue = texture(material.texture_displacement1, currentTexCoords).r;
+
+	while(currentLayerDepth < currentDepthMapValue)
+	{
+		currentTexCoords -= deltaTexCoords;
+		currentDepthMapValue = texture(material.texture_displacement1, currentTexCoords).r;
+		currentLayerDepth += layerDepth;
+	}
+
+	vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+	// calculate the difference between the layer depth and the displacement map depth for the layers before and after the collision
+	float afterDiff = currentDepthMapValue - currentLayerDepth;
+	float beforeDiff = texture(material.texture_displacement1, prevTexCoords).r - (currentLayerDepth - layerDepth);
+	float weight = afterDiff / (afterDiff - beforeDiff);
+	vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+	return finalTexCoords;
+}
