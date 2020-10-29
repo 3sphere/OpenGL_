@@ -1,9 +1,7 @@
 # OpenGL_
 
-### About
-The purpose of this project was to document my progress while learning graphics programming with the OpenGL API. As I learned about different graphical features and how they work, I implemented them into a 3D graphical scene.
+Real-time rendered scene using OpenGL
 
-Current status:  
 ![Screenshot](https://github.com/3sphere/OpenGL_/blob/master/screenshot.png)  
 
 Video: https://www.youtube.com/watch?v=4M1KlWlStf0  
